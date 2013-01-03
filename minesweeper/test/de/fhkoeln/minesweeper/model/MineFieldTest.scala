@@ -47,7 +47,7 @@ class MineFieldTest extends SpecificationWithJUnit {
       field.marked must beFalse
     }
     
-    "throw an Exception" in {
+    "throw an Exception when " in {
       field.uncover() must throwA[IllegalArgumentException]
     }
         
@@ -64,6 +64,36 @@ class MineFieldTest extends SpecificationWithJUnit {
     "throw an Exception when getting marked" in {
       (field.marked = true) must throwA[IllegalArgumentException]
     }
+  }
+  
+  "An armed Minefield" should {
+    val field = MineField(armed = true)
     
+    "should not be able to be constructed with adjacents" in {
+      MineField(2, true) must throwA[IllegalArgumentException]
+    }
+    
+    "be marked" in {
+      field.marked = true
+      field.marked must beTrue
+    }
+    
+    "be uncovered" in {
+      field.uncover()
+      field.uncovered must beTrue
+    }
+  }
+  
+  "An unarmed MineField with adjacent Mines" should {
+    
+    val field = new MineField(3)
+    
+    "not be armed" in {
+      field.armed must beFalse
+    }
+    
+    "not allow negative values" in {
+      MineField(-2) must throwA[IllegalArgumentException]
+    }
   }
 }
