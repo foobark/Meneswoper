@@ -8,30 +8,35 @@ import swing._
 class TUI {
 
   var grid = MineFieldGrid(1, 1, 0)
+  var firstMove = true
 
   def processInputLine(input: String) = {
     var continue = true
-    var firstMove = true
-    var endgame=(grid.getGrid(),false,false)
+    var endgame = (grid.getGrid(), false, false)
     input match {
       case "q" => continue = false
       case "n" => {
+        println("new game starts now")
         grid = MineFieldGrid(10, 20, 40) //chooseGrid
-        println(grid.toString)
+        firstMove = true
+        // println(grid.toString)
       }
       case _ => {
         input.toList.filter(c => c != ' ').map(c => c.toString.toInt) match {
           case row :: column :: value :: Nil => {
             if (firstMove) println("start to uncover first")
             else if (grid.getGrid()(row)(column).marked) {
-              grid.unmarkField((row, column))
-              println("Field "+"("+row+","+column+") got unmarked")
+              if (!endgame._1(row)(column).uncovered) {
+                grid.unmarkField((row, column))
+                println("Field " + "(" + row + "," + column + ") got unmarked")
+              }
+            } else {
+              if (!endgame._1(row)(column).uncovered) {
+                println("Field " + "(" + row + "," + column + ") got marked")
+                grid.markField((row, column))
+              }
             }
-            else {
-              println("Field "+"("+row+","+column+") got marked")
-              grid.markField((row, column))
-            } 
-            println(grid.toString)
+            //  println(grid.toString)
           }
 
           case row :: column :: Nil => {
@@ -39,13 +44,13 @@ class TUI {
               firstMove = false
               grid = MineFieldGrid(10, 20, 40, (row, column))
             }
-            endgame=grid.uncoverField((row, column))
-            println("Field "+"("+row+","+column+") got uncovered")
-            println(grid.toString)
-            if(endgame._2) println("you're dead!")
-            else if (endgame._3) println("you've won the Game")
-            
-            
+            if (!endgame._1(row)(column).uncovered) {
+              endgame = grid.uncoverField((row, column))
+              println("Field " + "(" + row + "," + column + ") got uncovered")
+              //  println(grid.toString)
+              if (endgame._2) println("you're dead!")
+              else if (endgame._3) println("you've won the Game")
+            }
           }
           case _ => println("False Input!!!")
         }
