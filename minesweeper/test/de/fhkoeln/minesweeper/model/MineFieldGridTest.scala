@@ -23,29 +23,34 @@ class MineFieldGridTest extends SpecificationWithJUnit {
             newgrid( 0 )( 0 ).adjacent must be_==( 0 )
             newgrid( 0 )( 0 ).uncovered must beTrue
         }
-        
+
         "return a grid of size 1 with 1 marked field" in {
-            val newgrid = grid.markField((0,0))
-            newgrid(0)(0).marked must beTrue
+            val newgrid = grid.markField( ( 0, 0 ) )
+            newgrid( 0 )( 0 ).marked must beTrue
         }
-        
+
         "return a grid of size 1 with 1 unmarked field" in {
-            grid.markField((0,0))
-            val newgrid = grid.unmarkField((0,0))
-            newgrid(0)(0).marked must beFalse
+            grid.markField( ( 0, 0 ) )
+            val newgrid = grid.unmarkField( ( 0, 0 ) )
+            newgrid( 0 )( 0 ).marked must beFalse
         }
-        
+
         "throw an Exception when uncovering a marked field" in {
-            grid.markField((0,0))
-            grid.uncoverField((0,0)) must throwA[MineGridException]
+            grid.markField( ( 0, 0 ) )
+            grid.uncoverField( ( 0, 0 ) ) must throwA[ MineGridException ]
         }
-        
+
         "throw an Exception when marking an uncovered field" in {
-            grid.uncoverField((0,0))
-            grid.markField((0,0)) must throwA[MineGridException]
+            grid.uncoverField( ( 0, 0 ) )
+            grid.markField( ( 0, 0 ) ) must throwA[ MineGridException ]
         }
         
-        
+        "throw an Exception when invalid positions get passed" in {
+            grid.uncoverField((-1, 2)) must throwA[MineGridException]
+            grid.markField((3, 4)) must throwA[MineGridException]
+            grid.unmarkField(1,-4) must throwA[MineGridException]
+            
+        }
 
     }
 
@@ -54,43 +59,43 @@ class MineFieldGridTest extends SpecificationWithJUnit {
             val grid = MineFieldGrid( 1, 1, 1, ( 0, 0 ) ) must throwA[ IllegalArgumentException ]
         }
     }
-    
+
     "A MineFieldGrid of size 1 * 2 with 1 mine" should {
-        
-        val grid = MineFieldGrid(1, 2, 1, (0,0) )
-        
+
+        val grid = MineFieldGrid( 1, 2, 1, ( 0, 0 ) )
+
         "not have a mine on the initial field" in {
-            val newgrid = grid.uncoverField((0,0))
-            newgrid._1(0)(0).armed must beFalse
+            val newgrid = grid.uncoverField( ( 0, 0 ) )
+            newgrid._1( 0 )( 0 ).armed must beFalse
             newgrid._2 must beFalse
             newgrid._3 must beTrue
         }
-        
+
         "have a mine on the 2nd field" in {
-            val newgrid = grid.uncoverField((0, 1))
-            newgrid._1(0)(1).armed must beTrue
+            val newgrid = grid.uncoverField( ( 0, 1 ) )
+            newgrid._1( 0 )( 1 ).armed must beTrue
             newgrid._2 must beTrue
             newgrid._3 must beFalse
         }
-        
+
         "have a field with 1 adjacent mine in first spot" in {
-            grid.getGrid()(0)(0).adjacent must be_==(1)
+            grid.getGrid()( 0 )( 0 ).adjacent must be_==( 1 )
         }
-        
+
     }
-    
+
     "A MineFieldGrid of size 3 * 3 with 2 mines" should {
-        
-        val grid = MineFieldGrid(3,3,2,(1,2))
-        
+
+        val grid = MineFieldGrid( 3, 3, 2, ( 1, 2 ) )
+
         "Not have an armed mine in inital field" in {
-            val newgrid = grid.uncoverField((1,2))
-            newgrid._1(1)(2).armed must beFalse
+            val newgrid = grid.uncoverField( ( 1, 2 ) )
+            newgrid._1( 1 )( 2 ).armed must beFalse
             newgrid._2 must beFalse
         }
-        
+
         "Have exactly 2 mines" in {
-           grid.getGrid().flatten count (x => x.armed ) must be_==(2)
+            grid.getGrid().flatten count ( x => x.armed ) must be_==( 2 )
         }
     }
 }
