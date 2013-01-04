@@ -43,8 +43,9 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
 
     }
 
+    //Uncover fields around a number field if it's surrounded by a number of marked fields
+    //equal to its number.
     def uncoverAdjacents( pos: ( Int, Int ) ): ( Array[ Array[ MineField ] ], Boolean, Boolean ) = {
-
         if ( countMarkedAdjacents( pos ) == grid( pos._1 )( pos._2 ).adjacent ) {
             getAdjacentPos( pos._1, pos._2 ) foreach doUncover
         }
@@ -72,13 +73,17 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         }
 
     }
-
-    private def countMarkedAdjacents( pos: ( Int, Int ) ): Int = {
-        getAdjacentPos( pos._1, pos._2 ) count ( ( x: ( Int, Int ) ) => !grid( x._1 )( x._2 ).uncovered && grid( x._1 )( x._2 ).marked )
-
+    
+    override def toString : String = {
+        grid.map(_.mkString(" ")).mkString("\n")
     }
 
-    //setup the mine grid with, i.e. initialize all fields.
+    //Count  marked fields adjacent to the specified one
+    private def countMarkedAdjacents( pos: ( Int, Int ) ): Int = {
+        getAdjacentPos( pos._1, pos._2 ) count ( x => grid( x._1 )( x._2 ).marked )
+    }
+
+    //setup the mine grid, i.e. initialize all fields.
     private def populateField() {
         //place mines first...
         placeMines()
@@ -133,6 +138,9 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         grid( y )( x ) eq null
     }
 
+
+    //auxilary method for uncovering fields
+    //keep recursively uncovering fields until a number field or marked field is uncovered
     private def doUncover( position: ( Int, Int ) ) {
         val y = position._1
         val x = position._2
@@ -149,6 +157,7 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         }
     }
 
+    //method returning whether the game has been won or not
     private def gameWon(): Boolean = uncovered.size == xsize * ysize - minecount && !mineUncovered
 
 }
