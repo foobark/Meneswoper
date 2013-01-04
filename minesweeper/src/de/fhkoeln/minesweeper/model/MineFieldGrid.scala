@@ -2,15 +2,21 @@ package de.fhkoeln.minesweeper.model
 
 import scala.util.Random
 
-case class MineFieldGrid( val xsize: Int, val ysize: Int, val minecount: Int, val initial_field: ( Int, Int ) = (0,0) ) {
+case class MineFieldGrid( val xsize: Int, val ysize: Int, val minecount: Int, val initial_field: ( Int, Int ) = ( 0, 0 ) ) {
 
     if ( minecount > xsize * ysize ) throw new IllegalArgumentException( "Too many mines for grid size" )
 
     if ( minecount < 0 ) throw new IllegalArgumentException( "minecount must be positive" )
 
-    if ( xsize < 0 || ysize < 0 ) throw new IllegalArgumentException( "xsize and ysize must be positive" )
+    if ( xsize <= 0 || ysize <= 0 ) throw new IllegalArgumentException( "xsize and ysize must be positive" )
 
     if ( initial_field._1 < 0 || initial_field._2 < 0 ) throw new IllegalArgumentException( "Initial field coordinates must be positive" )
+
+    private var grid = Array.ofDim[ MineField ]( ysize, xsize )
+
+    private val xboundaries = 0 until xsize
+
+    private val yboundaries = 0 until ysize
 
     populateField()
 
@@ -24,12 +30,12 @@ case class MineFieldGrid( val xsize: Int, val ysize: Int, val minecount: Int, va
 	 */
     def uncoverField( pos: ( Int, Int ) ): ( Array[ Array[ MineField ] ], Boolean, Boolean ) = {
         val field = grid( pos._1 )( pos._2 )
-        
+
         try field.uncover()
         catch {
             case iae: IllegalArgumentException => throw new MineGridException( "Trying to uncover marked field at: " + pos.toString() )
         }
-        
+
         field match {
             //Uncover armed mine indicate lost game
             case MineField( _, true, _, _ )                     => ( grid.clone(), true, false )
@@ -37,9 +43,8 @@ case class MineFieldGrid( val xsize: Int, val ysize: Int, val minecount: Int, va
             case MineField( adjacent, _, _, _ ) if adjacent > 0 => ( grid.clone(), false, false )
             //If field has no adjacent mines uncover all adjacent fields until a field with adjacent mines is discovered
             case MineField( 0, _, _, _ ) => {
-                val positions = getAdjacentPos( pos._1, pos._2 )
-                positions.init foreach ( uncoverField )
-                uncoverField( positions.last )
+                doUncover( pos )
+                ( grid.clone(), false, false )
             }
         }
     }
@@ -103,16 +108,22 @@ case class MineFieldGrid( val xsize: Int, val ysize: Int, val minecount: Int, va
     private def isMineField( pos: ( Int, Int ) ): Boolean = grid( pos._1 )( pos._2 ).armed
 
     //Check if position is within boundaries
-    private def isValidPos( pos: ( Int, Int ) ): Boolean = !fieldEmpty( pos._1, pos._2 ) && yboundaries.contains( pos._1 ) && xboundaries.contains( pos._2 )
+    private def isValidPos( pos: ( Int, Int ) ): Boolean = yboundaries.contains( pos._1 ) && xboundaries.contains( pos._2 ) && !fieldEmpty( pos._1, pos._2 )
 
     //check whether the position has already been populated with a field
-    private def fieldEmpty( y: Int, x: Int ): Boolean = grid( y )( x ) == null
+    private def fieldEmpty( y: Int, x: Int ): Boolean = {
+        grid( y )( x ) eq null
+    }
 
-    private var grid = Array.ofDim[ MineField ]( ysize, xsize )
+    private def doUncover( position: ( Int, Int ) ) {
+        val y = position._1
+        val x = position._2
+        grid( y )( x ).uncover()
+        if ( grid( y )( x ).adjacent == 0 ) {
+            getAdjacentPos( y, x ) foreach doUncover
+        }
+    }
 
-    private val xboundaries = 0 to xsize
-
-    private val yboundaries = 0 to ysize
 }
 
 case class MineGridException( s: String ) extends Exception
