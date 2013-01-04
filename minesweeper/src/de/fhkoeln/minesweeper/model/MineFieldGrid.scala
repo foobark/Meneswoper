@@ -34,8 +34,13 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
 	 * if everything besides the mines was uncovered.
 	 */
     def uncoverField( pos: ( Int, Int ) ): ( Array[ Array[ MineField ] ], Boolean, Boolean ) = {
-        doUncover( pos )
-        ( grid.clone(), mineUncovered, gameWon() )
+        try {
+            doUncover( pos )
+            ( grid.clone(), mineUncovered, gameWon() )
+        } catch {
+            case aaobe: ArrayIndexOutOfBoundsException => throw new MineGridException( "Invalid position: " + pos.toString() )
+        }
+
     }
     
     def uncoverAdjacents( pos: (Int, Int) ):  ( Array[ Array[ MineField ] ], Boolean, Boolean ) = {
@@ -45,22 +50,27 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
       }
       ( grid.clone(), mineUncovered, gameWon() )
     }
-   
+
     //mark the Field at specified position. Throws Exception if said field is already uncovered
-    def markField( pos: ( Int, Int ) ): Array[Array[MineField]] = {
+    def markField( pos: ( Int, Int ) ): Array[ Array[ MineField ] ] = {
         try {
-        	grid( pos._1 )( pos._2 ).marked = true
-        	grid.clone()
-        }
-        catch {
-            case iae: IllegalArgumentException => throw new MineGridException( "Trying to mark uncovered field at: " + pos.toString() )
+            grid( pos._1 )( pos._2 ).marked = true
+            grid.clone()
+        } catch {
+            case iae: IllegalArgumentException          => throw new MineGridException( "Trying to mark uncovered field at: " + pos.toString() )
+            case aioobe: ArrayIndexOutOfBoundsException => throw new MineGridException( "Invalid position: " + pos.toString() )
         }
     }
 
     //unmark the Field at specified position
-    def unmarkField( pos: ( Int, Int ) ):Array[Array[MineField]] = {
-    	grid( pos._1 )( pos._2 ).marked = false
-    	grid.clone()
+    def unmarkField( pos: ( Int, Int ) ): Array[ Array[ MineField ] ] = {
+        try {
+            grid( pos._1 )( pos._2 ).marked = false
+            grid.clone()
+        } catch {
+            case aioobe: ArrayIndexOutOfBoundsException => throw new MineGridException( "Invalid position: " + pos.toString() )
+        }
+
     }
     
     private def countMarkedAdjacents(pos: (Int,Int)):Int = {
@@ -134,8 +144,8 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         } catch {
             case iae: IllegalArgumentException => throw new MineGridException( "Trying to uncover marked field at: " + position.toString() )
         }
-        if ( field.adjacent == 0 && !field.armed) {
-            getAdjacentPos( y, x ) filter (x => !uncovered.contains(x)) foreach doUncover
+        if ( field.adjacent == 0 && !field.armed ) {
+            getAdjacentPos( y, x ) filter ( x => !uncovered.contains( x ) ) foreach doUncover
         }
     }
 
