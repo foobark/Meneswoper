@@ -28,6 +28,15 @@ case class MineField( val adjacent: Int = 0,
         checkMarkedConstraint()
     }
 
+    override def toString: String = {
+        this match {
+            case MineField( _, true, _, _ ) if uncovered           => "*"
+            case MineField( x, _, _, _ ) if uncovered  => x.toString;
+            case _ if !uncovered && !marked => "H"
+            case _ if marked => "#"
+        }
+    }
+
     //Uncovered field can't be marked and vice versa
     private def checkMarkedConstraint() = if ( _marked && _uncovered ) throw new IllegalArgumentException( "Can't mark uncovered Field" )
 }
