@@ -5,7 +5,7 @@ import scala.collection.mutable.HashSet
 
 case class MineFieldGrid( val xsize: Int, val ysize: Int, val minecount: Int, val initial_field: ( Int, Int ) = ( 0, 0 ) ) {
 
-    if ( minecount > xsize * ysize ) throw new IllegalArgumentException( "Too many mines for grid size" )
+    if ( minecount >= xsize * ysize ) throw new IllegalArgumentException( "Too many mines for grid size" )
 
     if ( minecount < 0 ) throw new IllegalArgumentException( "minecount must be positive" )
 
@@ -50,7 +50,10 @@ case class MineFieldGrid( val xsize: Int, val ysize: Int, val minecount: Int, va
     }
 
     //unmark the Field at specified position
-    def unmarkField( pos: ( Int, Int ) ) = grid( pos._1 )( pos._2 ).marked = false
+    def unmarkField( pos: ( Int, Int ) ):Array[Array[MineField]] = {
+    	grid( pos._1 )( pos._2 ).marked = false
+    	grid.clone()
+    }
 
     //setup the mine grid with, i.e. initialize all fields.
     private def populateField() {
@@ -118,8 +121,8 @@ case class MineFieldGrid( val xsize: Int, val ysize: Int, val minecount: Int, va
         } catch {
             case iae: IllegalArgumentException => throw new MineGridException( "Trying to uncover marked field at: " + position.toString() )
         }
-        if ( field.adjacent == 0 && !field.armed ) {
-            getAdjacentPos( y, x ) foreach doUncover
+        if ( field.adjacent == 0 && !field.armed) {
+            getAdjacentPos( y, x ) filter (x => !uncovered.contains(x)) foreach doUncover
         }
     }
 

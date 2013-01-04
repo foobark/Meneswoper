@@ -29,16 +29,43 @@ class MineFieldGridTest extends SpecificationWithJUnit {
             newgrid(0)(0).marked must beTrue
         }
         
+        "return a grid of size 1 with 1 unmarked field" in {
+            grid.markField((0,0))
+            val newgrid = grid.unmarkField((0,0))
+            newgrid(0)(0).marked must beFalse
+        }
+        
         "throw an Exception when uncovering a marked field" in {
             grid.markField((0,0))
             grid.uncoverField((0,0)) must throwA[MineGridException]
         }
+        
+        "throw an Exception when marking an uncovered field" in {
+            grid.uncoverField((0,0))
+            grid.markField((0,0)) must throwA[MineGridException]
+        }
+        
+        
 
     }
 
-//    "A MineFieldGrid of size 1 with 1 mine" should {
-//        "not be able to be constructed" in {
-//            val grid = MineFieldGrid( 1, 1, 1, ( 0, 0 ) ) must throwA[ IllegalArgumentException ]
-//        }
-//    }
+    "A MineFieldGrid of size 1 with 1 mine" should {
+        "not be able to be constructed" in {
+            val grid = MineFieldGrid( 1, 1, 1, ( 0, 0 ) ) must throwA[ IllegalArgumentException ]
+        }
+    }
+    
+    "A MineFieldGrid of size 1 * 2 with 1 mine" should {
+        
+        val grid = MineFieldGrid(1, 2, 1, (0,0) )
+        
+        "not have a mine on the initial field" in {
+            val newgrid = grid.uncoverField((0,0))
+            newgrid._1(0)(0).armed must beFalse
+            newgrid._2 must beFalse
+            newgrid._3 must beTrue
+        }
+        
+        
+    }
 }
