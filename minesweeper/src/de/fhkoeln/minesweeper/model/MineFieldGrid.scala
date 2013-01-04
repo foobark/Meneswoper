@@ -37,6 +37,14 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         doUncover( pos )
         ( grid.clone(), mineUncovered, gameWon() )
     }
+    
+    def uncoverAdjacents( pos: (Int, Int) ):  ( Array[ Array[ MineField ] ], Boolean, Boolean ) = {
+      
+      if(countMarkedAdjacents(pos)==grid(pos._1)(pos._2).adjacent) {
+        getAdjacentPos(pos._1,pos._2) filter ((x: (Int,Int)) => !grid(x._1)(x._2).uncovered && !grid(x._1)(x._2).marked) foreach doUncover
+      }
+      ( grid.clone(), mineUncovered, gameWon() )
+    }
    
     //mark the Field at specified position. Throws Exception if said field is already uncovered
     def markField( pos: ( Int, Int ) ): Array[Array[MineField]] = {
@@ -53,6 +61,11 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
     def unmarkField( pos: ( Int, Int ) ):Array[Array[MineField]] = {
     	grid( pos._1 )( pos._2 ).marked = false
     	grid.clone()
+    }
+    
+    private def countMarkedAdjacents(pos: (Int,Int)):Int = {
+      getAdjacentPos(pos._1,pos._2) count ((x: (Int,Int)) => !grid(x._1)(x._2).uncovered && grid(x._1)(x._2).marked)
+      
     }
 
     //setup the mine grid with, i.e. initialize all fields.
