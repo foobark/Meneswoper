@@ -89,8 +89,8 @@ class MineFieldGridTest extends SpecificationWithJUnit {
             newgrid._2 must beFalse
         }
         
-        "" in {
-           grid.getGrid()
+        "Have exactly 2 mines" in {
+           grid.getGrid().flatten count (x => x.armed ) must be_==(2)
         }
     }
 }
