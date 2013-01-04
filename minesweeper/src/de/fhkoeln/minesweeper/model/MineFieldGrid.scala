@@ -1,6 +1,7 @@
 package de.fhkoeln.minesweeper.model
 
 import scala.util.Random
+import scala.collection.mutable.HashSet
 
 case class MineFieldGrid( val xsize: Int, val ysize: Int, val minecount: Int, val initial_field: ( Int, Int ) = ( 0, 0 ) ) {
 
@@ -18,6 +19,10 @@ case class MineFieldGrid( val xsize: Int, val ysize: Int, val minecount: Int, va
 
     private val yboundaries = 0 until ysize
 
+    private var mineUncovered = false
+
+    private var uncovered = new HashSet[ ( Int, Int ) ]()
+
     populateField()
 
     //get a copy of the internal grid
@@ -29,29 +34,16 @@ case class MineFieldGrid( val xsize: Int, val ysize: Int, val minecount: Int, va
 	 * if everything besides the mines was uncovered.
 	 */
     def uncoverField( pos: ( Int, Int ) ): ( Array[ Array[ MineField ] ], Boolean, Boolean ) = {
-        val field = grid( pos._1 )( pos._2 )
-
-        try field.uncover()
-        catch {
-            case iae: IllegalArgumentException => throw new MineGridException( "Trying to uncover marked field at: " + pos.toString() )
-        }
-
-        field match {
-            //Uncover armed mine indicate lost game
-            case MineField( _, true, _, _ )                     => ( grid.clone(), true, false )
-            //If field has adjacent mines simply uncover it
-            case MineField( adjacent, _, _, _ ) if adjacent > 0 => ( grid.clone(), false, false )
-            //If field has no adjacent mines uncover all adjacent fields until a field with adjacent mines is discovered
-            case MineField( 0, _, _, _ ) => {
-                doUncover( pos )
-                ( grid.clone(), false, false )
-            }
-        }
+        doUncover( pos )
+        ( grid.clone(), mineUncovered, gameWon() )
     }
 
     //mark the Field at specified position. Throws Exception if said field is already uncovered
-    def markField( pos: ( Int, Int ) ) {
-        try grid( pos._1 )( pos._2 ).marked_=( true )
+    def markField( pos: ( Int, Int ) ): Array[Array[MineField]] = {
+        try {
+        	grid( pos._1 )( pos._2 ).marked = true
+        	grid.clone()
+        }
         catch {
             case iae: IllegalArgumentException => throw new MineGridException( "Trying to mark uncovered field at: " + pos.toString() )
         }
@@ -118,11 +110,20 @@ case class MineFieldGrid( val xsize: Int, val ysize: Int, val minecount: Int, va
     private def doUncover( position: ( Int, Int ) ) {
         val y = position._1
         val x = position._2
-        grid( y )( x ).uncover()
-        if ( grid( y )( x ).adjacent == 0 ) {
+        val field = grid( y )( x )
+        try {
+            field.uncover()
+            mineUncovered = field.armed
+            uncovered.add( position )
+        } catch {
+            case iae: IllegalArgumentException => throw new MineGridException( "Trying to uncover marked field at: " + position.toString() )
+        }
+        if ( field.adjacent == 0 && !field.armed ) {
             getAdjacentPos( y, x ) foreach doUncover
         }
     }
+
+    private def gameWon(): Boolean = uncovered.size == xsize * ysize - minecount && !mineUncovered
 
 }
 
