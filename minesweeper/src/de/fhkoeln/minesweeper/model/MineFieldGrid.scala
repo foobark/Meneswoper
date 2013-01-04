@@ -37,7 +37,7 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         doUncover( pos )
         ( grid.clone(), mineUncovered, gameWon() )
     }
-
+   
     //mark the Field at specified position. Throws Exception if said field is already uncovered
     def markField( pos: ( Int, Int ) ): Array[Array[MineField]] = {
         try {

@@ -66,6 +66,31 @@ class MineFieldGridTest extends SpecificationWithJUnit {
             newgrid._3 must beTrue
         }
         
+        "have a mine on the 2nd field" in {
+            val newgrid = grid.uncoverField((0, 1))
+            newgrid._1(0)(1).armed must beTrue
+            newgrid._2 must beTrue
+            newgrid._3 must beFalse
+        }
         
+        "have a field with 1 adjacent mine in first spot" in {
+            grid.getGrid()(0)(0).adjacent must be_==(1)
+        }
+        
+    }
+    
+    "A MineFieldGrid of size 3 * 3 with 2 mines" should {
+        
+        val grid = MineFieldGrid(3,3,2,(1,2))
+        
+        "Not have an armed mine in inital field" in {
+            val newgrid = grid.uncoverField((1,2))
+            newgrid._1(1)(2).armed must beFalse
+            newgrid._2 must beFalse
+        }
+        
+        "" in {
+           grid.getGrid()
+        }
     }
 }
