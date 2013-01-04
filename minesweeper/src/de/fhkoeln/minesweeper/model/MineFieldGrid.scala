@@ -42,13 +42,13 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         }
 
     }
-    
-    def uncoverAdjacents( pos: (Int, Int) ):  ( Array[ Array[ MineField ] ], Boolean, Boolean ) = {
-      
-      if(countMarkedAdjacents(pos)==grid(pos._1)(pos._2).adjacent) {
-        getAdjacentPos(pos._1,pos._2) filter ((x: (Int,Int)) => !grid(x._1)(x._2).uncovered && !grid(x._1)(x._2).marked) foreach doUncover
-      }
-      ( grid.clone(), mineUncovered, gameWon() )
+
+    def uncoverAdjacents( pos: ( Int, Int ) ): ( Array[ Array[ MineField ] ], Boolean, Boolean ) = {
+
+        if ( countMarkedAdjacents( pos ) == grid( pos._1 )( pos._2 ).adjacent ) {
+            getAdjacentPos( pos._1, pos._2 ) foreach doUncover
+        }
+        ( grid.clone(), mineUncovered, gameWon() )
     }
 
     //mark the Field at specified position. Throws Exception if said field is already uncovered
@@ -72,10 +72,10 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         }
 
     }
-    
-    private def countMarkedAdjacents(pos: (Int,Int)):Int = {
-      getAdjacentPos(pos._1,pos._2) count ((x: (Int,Int)) => !grid(x._1)(x._2).uncovered && grid(x._1)(x._2).marked)
-      
+
+    private def countMarkedAdjacents( pos: ( Int, Int ) ): Int = {
+        getAdjacentPos( pos._1, pos._2 ) count ( ( x: ( Int, Int ) ) => !grid( x._1 )( x._2 ).uncovered && grid( x._1 )( x._2 ).marked )
+
     }
 
     //setup the mine grid with, i.e. initialize all fields.
@@ -137,13 +137,13 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         val y = position._1
         val x = position._2
         val field = grid( y )( x )
-        try {
+
+        if ( !field.marked ) {
             field.uncover()
             mineUncovered = field.armed
             uncovered.add( position )
-        } catch {
-            case iae: IllegalArgumentException => throw new MineGridException( "Trying to uncover marked field at: " + position.toString() )
         }
+
         if ( field.adjacent == 0 && !field.armed ) {
             getAdjacentPos( y, x ) filter ( x => !uncovered.contains( x ) ) foreach doUncover
         }

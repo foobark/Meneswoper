@@ -35,9 +35,11 @@ class MineFieldGridTest extends SpecificationWithJUnit {
             newgrid( 0 )( 0 ).marked must beFalse
         }
 
-        "throw an Exception when uncovering a marked field" in {
+        "Not uncover a marked field" in {
             grid.markField( ( 0, 0 ) )
-            grid.uncoverField( ( 0, 0 ) ) must throwA[ MineGridException ]
+            val newgrid = grid.uncoverField( (0,0) )
+            newgrid._1(0)(0).marked must beTrue
+            newgrid._1(0)(0).uncovered must beFalse
         }
 
         "throw an Exception when marking an uncovered field" in {
