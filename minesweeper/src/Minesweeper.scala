@@ -1,4 +1,4 @@
-package de.fhkoeln.minesweeper.model
+
 
 import de.fhkoeln.minesweeper.view.TUI
 

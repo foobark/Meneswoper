@@ -7,61 +7,94 @@ import swing._
 
 class TUI {
 
-  var grid = MineFieldGrid(1, 1, 0)
-  var firstMove = true
+    var grid = MineFieldGrid( 1, 1, 0 )
 
-  def processInputLine(input: String) = {
-    var continue = true
-    var endgame = (grid.getGrid(), false, false)
-    input match {
-      case "q" => continue = false
-      case "n" => {
-        println("new game starts now")
-        grid = MineFieldGrid(8, 8, 10) //chooseGrid
-        firstMove = true
-        println(grid.toString)
-      }
-      case _ => {
-        input.toList.filter(c => c != ' ').map(c => c.toString.toInt) match {
-          case row :: column :: value :: Nil => {
-            if (firstMove) println("start to uncover first")
-            else if (grid.getGrid()(row)(column).marked) {
-              if (!endgame._1(row)(column).uncovered) {
-                grid.unmarkField((row, column))
-                println("Field " + "(" + row + "," + column + ") got unmarked")
-              }
-            } else {
-              if (!endgame._1(row)(column).uncovered) {
-                println("Field " + "(" + row + "," + column + ") got marked")
-                grid.markField((row, column))
-              }
-            }
-            println(grid.toString)
-          }
+    var firstMove = true
 
-          case row :: column :: Nil => {
-            if (firstMove) {
-              firstMove = false
-              grid = MineFieldGrid(8, 8, 10, (row, column))
+    def processInputLine( input: String ) = {
+
+        var continue = true
+
+        var gamestate = grid.getGrid()
+
+        var win = false
+
+        var loss = false
+
+        input match {
+
+            case "q" => continue = false
+
+            case "n" => {
+                newGame
             }
-            if (!endgame._1(row)(column).uncovered) {
-              endgame = grid.uncoverField((row, column))
-              println("Field " + "(" + row + "," + column + ") got uncovered")
-              println(grid.toString)
-              if (endgame._2) println("you're dead!")
-              else if (endgame._3) println("you've won the Game")
+
+            case _ => {
+
+                input.toList.filter( c => c != ' ' ).map( c => c.toString.toInt ) match {
+
+                    case row :: column :: value :: Nil => {
+
+                        val field = gamestate( row )( column )
+
+                        if ( firstMove ) println( "start to uncover first" )
+
+                        else if ( !field.uncovered ) {
+
+                            if ( field.marked ) {
+                                grid.unmarkField( ( row, column ) )
+                                println( "Field " + "(" + row + "," + column + ") got unmarked" )
+                                
+                            } else if ( !field.uncovered ) {
+                                println( "Field " + "(" + row + "," + column + ") got marked" )
+                                grid.markField( ( row, column ) )
+                            }
+                        }
+                        println( grid.toString )
+                    }
+
+                    case row :: column :: Nil => {
+
+                        val field = gamestate( row )( column )
+
+                        if ( firstMove ) {
+                            firstMove = false
+                            grid = MineFieldGrid( 8, 8, 10, ( row, column ) )
+                        }
+
+                        if ( !field.uncovered ) {
+
+                            val newgrid = grid.uncoverField( ( row, column ) )
+
+                            gamestate = newgrid._1
+                            loss = newgrid._2
+                            win = newgrid._3
+
+                            println( "Field " + "(" + row + "," + column + ") got uncovered" )
+                            println( grid.toString )
+
+                            if ( loss ) println( "you're dead!" )
+                            else if ( win ) println( "you've won the Game" )
+                        }
+                    }
+
+                    case _ => println( "False Input!!!" )
+                }
             }
-          }
-          case _ => println("False Input!!!")
         }
-      }
+
+        continue
     }
 
-    continue
-  }
+    def chooseGrid {
 
-  def chooseGrid {
+    }
 
-  }
+    private def newGame: Unit = {
+        println( "new game starts now" )
+        grid = MineFieldGrid( 8, 8, 10 ) //chooseGrid
+        firstMove = true
+        println( grid.toString )
+    }
 
 }
