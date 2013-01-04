@@ -17,9 +17,9 @@ class TUI {
       case "q" => continue = false
       case "n" => {
         println("new game starts now")
-        grid = MineFieldGrid(10, 20, 40) //chooseGrid
+        grid = MineFieldGrid(8, 8, 10) //chooseGrid
         firstMove = true
-        // println(grid.toString)
+        println(grid.toString)
       }
       case _ => {
         input.toList.filter(c => c != ' ').map(c => c.toString.toInt) match {
@@ -36,18 +36,18 @@ class TUI {
                 grid.markField((row, column))
               }
             }
-            //  println(grid.toString)
+            println(grid.toString)
           }
 
           case row :: column :: Nil => {
             if (firstMove) {
               firstMove = false
-              grid = MineFieldGrid(10, 20, 40, (row, column))
+              grid = MineFieldGrid(8, 8, 10, (row, column))
             }
             if (!endgame._1(row)(column).uncovered) {
               endgame = grid.uncoverField((row, column))
               println("Field " + "(" + row + "," + column + ") got uncovered")
-              //  println(grid.toString)
+              println(grid.toString)
               if (endgame._2) println("you're dead!")
               else if (endgame._3) println("you've won the Game")
             }
