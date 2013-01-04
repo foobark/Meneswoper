@@ -3,7 +3,7 @@ package de.fhkoeln.minesweeper.model
 import scala.util.Random
 import scala.collection.mutable.HashSet
 
-case class MineFieldGrid( val xsize: Int, val ysize: Int, val minecount: Int, val initial_field: ( Int, Int ) = ( 0, 0 ) ) {
+case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, val initial_field: ( Int, Int ) = ( 0, 0 ) ) {
 
     if ( minecount >= xsize * ysize ) throw new IllegalArgumentException( "Too many mines for grid size" )
 
