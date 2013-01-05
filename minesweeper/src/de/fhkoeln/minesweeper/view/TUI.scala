@@ -31,7 +31,7 @@ class TUI {
 
             case _ => {
 
-                input.toList.filter( c => c != ' ' ).map( c => c.toString.toInt ) match {
+                input.toList.filter( c => c != ' ' ).map( _.toString.toInt ) match {
 
                     case row :: column :: value :: Nil => {
 
@@ -39,16 +39,27 @@ class TUI {
 
                         if ( firstMove ) println( "start to uncover first" )
 
-                        else if ( !field.uncovered ) {
-
-                            if ( field.marked ) {
-                                grid.unmarkField( ( row, column ) )
-                                println( "Field " + "(" + row + "," + column + ") got unmarked" )
-                                
-                            } else if ( !field.uncovered ) {
-                                println( "Field " + "(" + row + "," + column + ") got marked" )
-                                grid.markField( ( row, column ) )
+                        else if( !field.uncovered ) {
+                        	var op = ""
+                            field.marked match {
+                                case true => {
+                                    grid.unmarkField( ( row, column ) )
+                                    op = "unmarked"
+                                }
+                                case false => {
+                                    grid.markField( ( row, column ) )
+                                    op = "marked"
+                                }
+                                println( "Field " + "(" + row + "," + column + ") got " + op )
                             }
+                            //                            if ( field.marked ) {
+                            //                                grid.unmarkField( ( row, column ) )
+                            //                                
+                            //                                
+                            //                            } else if ( !field.marked ) {
+                            //                                println( "Field " + "(" + row + "," + column + ") got marked" )
+                            //                                grid.markField( ( row, column ) )
+                            //                            }
                         }
                         println( grid.toString )
                     }
