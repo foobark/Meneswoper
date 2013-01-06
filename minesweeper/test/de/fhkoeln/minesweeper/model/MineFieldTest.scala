@@ -4,7 +4,7 @@ import org.specs._
 
 class MineFieldTest extends SpecificationWithJUnit {
 
-    "An empty unmarked covered MineField" should {
+    "An unmarked covered MineField" should {
 
         val field = MineField()
 
@@ -12,8 +12,8 @@ class MineFieldTest extends SpecificationWithJUnit {
             field.adjacent must be_==( 0 )
         }
 
-        "be not armed" in {
-            field.armed must beFalse
+        "be armed" in {
+            field.armed must beTrue
         }
 
         "be not marked" in {
@@ -21,31 +21,31 @@ class MineFieldTest extends SpecificationWithJUnit {
         }
 
         "be covered" in {
-            field.uncovered must beFalse
+            field.covered must beTrue
         }
 
-        "be marked" in {
-            field.marked = true
-            field.marked must beTrue
+        "return a marked MineField" in {
+            val newfield = field.mark
+            newfield.marked must beTrue
         }
 
-        "be uncovered" in {
-            field.uncover()
-            field.uncovered must beTrue
+        "return a triggered Field" in {
+            val newfield = field.uncover()
+            newfield.triggered must beTrue
         }
     }
 
-    "An empty marked covered MineField" should {
+    "An marked covered MineField" should {
         
-        val field = MineField( _marked = true )
+        val field = MineField.marked
 
         "be marked" in {
             field.marked must beTrue
         }
 
-        "be not marked" in {
-            field.marked = false
-            field.marked must beFalse
+        "return an unmarked Field" in {
+            val newfield = field.unmark
+            newfield.marked must beFalse
         }
 
         "throw an Exception when " in {
@@ -54,48 +54,16 @@ class MineFieldTest extends SpecificationWithJUnit {
 
     }
 
-    "An empty uncovered MineField" should {
+    "A triggered MineField" should {
 
-        val field = MineField( _uncovered = true )
-
-        "be uncovered" in {
-            field.uncovered must beTrue
+        val field = MineField.triggered
+        
+        "be triggered" in {
+            field.triggered must beTrue
         }
 
         "throw an Exception when getting marked" in {
-            ( field.marked = true ) must throwA[ IllegalArgumentException ]
-        }
-    }
-
-    "An armed Minefield" should {
-        
-        val field = MineField( armed = true )
-
-        "should not be able to be constructed with adjacents" in {
-            MineField( 2, true ) must throwA[ IllegalArgumentException ]
-        }
-
-        "be marked" in {
-            field.marked = true
-            field.marked must beTrue
-        }
-
-        "be uncovered" in {
-            field.uncover()
-            field.uncovered must beTrue
-        }
-    }
-
-    "An unarmed MineField with adjacent Mines" should {
-
-        val field = new MineField( 3 )
-
-        "not be armed" in {
-            field.armed must beFalse
-        }
-
-        "not allow negative values" in {
-            MineField( -2 ) must throwA[ IllegalArgumentException ]
+            field.mark must throwA[ IllegalArgumentException ]
         }
     }
 }
