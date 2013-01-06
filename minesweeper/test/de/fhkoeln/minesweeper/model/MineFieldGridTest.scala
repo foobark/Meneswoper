@@ -3,6 +3,7 @@ package de.fhkoeln.minesweeper.model
 import org.specs.SpecificationWithJUnit
 
 class MineFieldGridTest extends SpecificationWithJUnit {
+    
     "A MineField Grid of size 1 without mines" should {
 
         val grid = MineFieldGrid( 1, 1, 0 )
@@ -15,11 +16,11 @@ class MineFieldGridTest extends SpecificationWithJUnit {
             grid.uncoverField( ( 0, 0 ) )._3 must beTrue
         }
 
-        "return a grid of size 1 with 1 uncovered unarmed Field with no adjacent mines" in {
+        "return a grid of size 1 with 1 uncovered untriggered Field with no adjacent mines" in {
             val newgrid = grid.uncoverField( ( 0, 0 ) )._1
             newgrid.size must be_==( 1 )
             newgrid( 0 ).size must be_==( 1 )
-            newgrid( 0 )( 0 ).armed must beFalse
+            newgrid( 0 )( 0 ).triggered must beFalse
             newgrid( 0 )( 0 ).adjacent must be_==( 0 )
             newgrid( 0 )( 0 ).uncovered must beTrue
         }
@@ -68,20 +69,20 @@ class MineFieldGridTest extends SpecificationWithJUnit {
 
         "not have a mine on the initial field" in {
             val newgrid = grid.uncoverField( ( 0, 0 ) )
-            newgrid._1( 0 )( 0 ).armed must beFalse
+            newgrid._1( 0 )( 0 ).triggered must beFalse
             newgrid._2 must beFalse
             newgrid._3 must beTrue
         }
 
         "have a mine on the 2nd field" in {
             val newgrid = grid.uncoverField( ( 0, 1 ) )
-            newgrid._1( 0 )( 1 ).armed must beTrue
+            newgrid._1( 0 )( 1 ).triggered must beTrue
             newgrid._2 must beTrue
             newgrid._3 must beFalse
         }
 
         "have a field with 1 adjacent mine in first spot" in {
-            grid.getGrid()( 0 )( 0 ).adjacent must be_==( 1 )
+            grid.getGridState()( 0 )( 0 ).adjacent must be_==( 1 )
         }
 
     }
@@ -92,12 +93,13 @@ class MineFieldGridTest extends SpecificationWithJUnit {
 
         "Not have an armed mine in inital field" in {
             val newgrid = grid.uncoverField( ( 1, 2 ) )
-            newgrid._1( 1 )( 2 ).armed must beFalse
+            newgrid._1( 1 )( 2 ).triggered must beFalse
             newgrid._2 must beFalse
         }
 
         "Have exactly 2 mines" in {
-            grid.getGrid().flatten count ( x => x.armed ) must be_==( 2 )
+            for (i <- 0 until 2; j <- 0 until 2) grid.uncoverField((i,j))
+            grid.getGridState().flatten count ( x => x.triggered ) must be_==( 2 )
         }
     }
 }

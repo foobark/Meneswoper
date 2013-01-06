@@ -3,7 +3,11 @@ package de.fhkoeln.minesweeper.model
 import scala.util.Random
 import scala.collection.mutable.HashSet
 
+
+
 case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, val initial_field: ( Int, Int ) = ( 0, 0 ) ) {
+    
+    type GridState = Array[Array[MineFieldState]]
 
     if ( minecount >= xsize * ysize ) throw new IllegalArgumentException( "Too many mines for grid size" )
 
@@ -13,7 +17,7 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
 
     if ( initial_field._1 < 0 || initial_field._2 < 0 ) throw new IllegalArgumentException( "Initial field coordinates must be positive" )
 
-    private var grid = Array.ofDim[ MineField ]( ysize, xsize )
+    private var grid = Array.ofDim[ Field ]( ysize, xsize )
 
     private val xboundaries = 0 until xsize
 
@@ -26,17 +30,16 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
     populateField()
 
     //get a copy of the internal grid
-    def getGrid(): Array[ Array[ MineField ] ] = grid.clone()
-
+    def getGridState(): GridState = grid map( x => x map (_.state))
     /*
 	 * 
 	 * @Return: tupel containing updated grid, Boolean indicating whether a mine was uncovered and finally a Boolean
 	 * if everything besides the mines was uncovered.
 	 */
-    def uncoverField( pos: ( Int, Int ) ): ( Array[ Array[ MineField ] ], Boolean, Boolean ) = {
+    def uncoverField( pos: ( Int, Int ) ): ( GridState, Boolean, Boolean ) = {
         try {
             doUncover( pos )
-            ( grid.clone(), mineUncovered, gameWon() )
+            ( getGridState, mineUncovered, gameWon() )
         } catch {
             case aaobe: ArrayIndexOutOfBoundsException => throw new MineGridException( "Invalid position: " + pos.toString() )
         }
@@ -45,18 +48,20 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
 
     //Uncover fields around a number field if it's surrounded by a number of marked fields
     //equal to its number.
-    def uncoverAdjacents( pos: ( Int, Int ) ): ( Array[ Array[ MineField ] ], Boolean, Boolean ) = {
+    def uncoverAdjacents( pos: ( Int, Int ) ): ( GridState, Boolean, Boolean ) = {
         if ( countMarkedAdjacents( pos ) == grid( pos._1 )( pos._2 ).adjacent ) {
             getAdjacentPos( pos._1, pos._2 ) foreach doUncover
         }
-        ( grid.clone(), mineUncovered, gameWon() )
+        ( getGridState, mineUncovered, gameWon() )
     }
 
     //mark the Field at specified position. Throws Exception if said field is already uncovered
-    def markField( pos: ( Int, Int ) ): Array[ Array[ MineField ] ] = {
+    def markField( pos: ( Int, Int ) ): GridState = {
         try {
-            grid( pos._1 )( pos._2 ).marked = true
-            grid.clone()
+            val y = pos._1
+            val x = pos._2
+            grid( y )( x ) = grid(y)(x).mark
+            getGridState
         } catch {
             case iae: IllegalArgumentException          => throw new MineGridException( "Trying to mark uncovered field at: " + pos.toString() )
             case aioobe: ArrayIndexOutOfBoundsException => throw new MineGridException( "Invalid position: " + pos.toString() )
@@ -64,10 +69,12 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
     }
 
     //unmark the Field at specified position
-    def unmarkField( pos: ( Int, Int ) ): Array[ Array[ MineField ] ] = {
+    def unmarkField( pos: ( Int, Int ) ): GridState = {
         try {
-            grid( pos._1 )( pos._2 ).marked = false
-            grid.clone()
+            val y = pos._1
+            val x = pos._2
+            grid( y )( x ) = grid(y)(x).unmark
+            getGridState
         } catch {
             case aioobe: ArrayIndexOutOfBoundsException => throw new MineGridException( "Invalid position: " + pos.toString() )
         }
@@ -91,7 +98,7 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         for ( i <- 0 until ysize; j <- 0 until xsize ) {
             //make sure no double placements happen (and mines get overwritten)
             if ( fieldEmpty( i, j ) ) {
-                grid( i )( j ) = MineField( adjacent = countAdjacentMines( i, j ) )
+                grid( i )( j ) = NumberField( MineFieldState.covered( countAdjacentMines( i, j ) ) )
             }
         }
     }
@@ -105,7 +112,7 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
             val col = randy.nextInt( xsize )
             //make sure same field doesn't get populated twice
             if ( fieldEmpty( row, col ) && ( row, col ) != initial_field ) {
-                grid( row )( col ) = MineField( armed = true )
+                grid( row )( col ) = MineField()
                 placed += 1
             }
         }
@@ -147,7 +154,7 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         val field = grid( y )( x )
 
         if ( !field.marked ) {
-            field.uncover()
+            grid(y)(x) = field.uncover()
             mineUncovered = field.armed
             uncovered.add( position )
         }
