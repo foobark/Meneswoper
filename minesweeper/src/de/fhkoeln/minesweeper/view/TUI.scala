@@ -1,6 +1,6 @@
 package de.fhkoeln.minesweeper.view
 
-import de.fhkoeln.minesweeper.model.MineField
+import de.fhkoeln.minesweeper.model.Field
 import de.fhkoeln.minesweeper.model.MineFieldGrid
 import scala.io.Source._
 import swing._
@@ -15,7 +15,7 @@ class TUI {
 
         var continue = true
 
-        var gamestate = grid.getGrid()
+        var gamestate = grid.getGridState()
 
         var win = false
 
