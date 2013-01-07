@@ -45,7 +45,7 @@ class GridControllerTest extends SpecificationWithJUnit {
             reactor.newGame must beTrue
             reactor.gridUpdate must beFalse
             reactor.gameLost must beFalse
-            reactor.gameWon must beTrue
+            reactor.gameWon must beFalse
             reactor.gridReceived(0) forall(_.covered) must beTrue
         }
         

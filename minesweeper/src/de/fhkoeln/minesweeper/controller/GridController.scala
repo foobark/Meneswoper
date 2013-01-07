@@ -42,15 +42,13 @@ class GridController {
         boundaryCheck( y, x )
         if ( newgame ) {
             grid = MineFieldGrid( ysize, xsize, difficulty._3, ( y, x ) )
-            grid.uncoverField( ( y, x ) )
             newgame = false
-            update( new GridUpdated( grid.getGridState ) )
-        } else {
-            val ( newgrid, lost, won ) = grid.uncoverField( y, x )
-            if ( lost ) update( new GameLost( newgrid ) )
-            else if ( won ) update( new GameWon( newgrid ) )
-            else update( new GridUpdated( newgrid ) )
         }
+        val ( newgrid, lost, won ) = grid.uncoverField( y, x )
+        if ( lost ) update( new GameLost( newgrid ) )
+        else if ( won ) update( new GameWon( newgrid ) )
+        else update( new GridUpdated( newgrid ) )
+
     }
 
     def markPosition( y: Int, x: Int ) = {
