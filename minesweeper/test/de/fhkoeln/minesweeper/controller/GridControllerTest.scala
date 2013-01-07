@@ -64,5 +64,28 @@ class GridControllerTest extends SpecificationWithJUnit {
             reactor.gridReceived(0)(1).uncovered must beTrue
             reactor.gridReceived(0)(0).covered must beTrue
         }
+        
+        "Uncover a mine the 2nd time" in {
+            controller.startNewGame(diff)
+            controller.uncoverPosition(0,0)
+            controller.uncoverPosition(0,1)
+            reactor.gameLost must beTrue
+            reactor.gridReceived(0)(0).uncovered must beTrue
+            reactor.gridReceived(0)(1).triggered must beTrue
+        }
+    }
+    
+    "A GridController controlling a 10 * 10 field" should {
+        val controller= new GridController()
+        val reactor = new MockReactor(controller)
+        val diff = (10, 10, 98)
+        
+        "Trigger a GridUpdate" in {
+            //Test has a small chance of failing if both empty fields get placed
+            //next to each other. reactor.gameWon will be true then
+            controller.startNewGame(diff)
+            controller.uncoverPosition(0,0)
+            reactor.gridUpdate must beTrue
+        }
     }
 }
