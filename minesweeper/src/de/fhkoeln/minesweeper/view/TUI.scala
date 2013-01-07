@@ -10,6 +10,8 @@ class TUI {
     var grid = MineFieldGrid( 1, 1, 0 )
 
     var firstMove = true
+    
+    var size=(14,14,10)
 
     def processInputLine( input: String ) = {
 
@@ -31,11 +33,13 @@ class TUI {
 
             case _ => {
 
-                input.toList.filter( c => c != ' ' ).map( _.toString.toInt ) match {
+                input.toList.filter( c => c != ' ' ).map( _.toString ) match {
 
-                    case row :: column :: value :: Nil => {
+                    case row :: "," :: column :: "," :: value :: Nil => {
+                      var ro=row.toInt
+                      var col=column.toInt
 
-                        val field = gamestate( row )( column )
+                        val field = gamestate( ro )( col )
 
                         if ( firstMove ) println( "start to uncover first" )
 
@@ -43,45 +47,40 @@ class TUI {
                         	var op = ""
                             field.marked match {
                                 case true => {
-                                    grid.unmarkField( ( row, column ) )
+                                    grid.unmarkField( ( ro, col ) )
                                     op = "unmarked"
                                 }
                                 case false => {
-                                    grid.markField( ( row, column ) )
+                                    grid.markField( ( ro, col ) )
                                     op = "marked"
                                 }
-                                println( "Field " + "(" + row + "," + column + ") got " + op )
+                                println( "Field " + "(" + ro + "," + col + ") got " + op )
                             }
-                            //                            if ( field.marked ) {
-                            //                                grid.unmarkField( ( row, column ) )
-                            //                                
-                            //                                
-                            //                            } else if ( !field.marked ) {
-                            //                                println( "Field " + "(" + row + "," + column + ") got marked" )
-                            //                                grid.markField( ( row, column ) )
-                            //                            }
                         }
                         println( grid.toString )
                     }
 
-                    case row :: column :: Nil => {
+                    case row :: "," :: column :: Nil => {
+                      
+                      var ro=row.toInt
+                      var col=column.toInt
 
-                        val field = gamestate( row )( column )
+                        val field = gamestate( ro )( col )
 
                         if ( firstMove ) {
                             firstMove = false
-                            grid = MineFieldGrid( 8, 8, 10, ( row, column ) )
+                            grid = MineFieldGrid( size._1, size._2, size._3, ( ro, col ) )
                         }
 
                         if ( !field.uncovered ) {
 
-                            val newgrid = grid.uncoverField( ( row, column ) )
+                            val newgrid = grid.uncoverField( ( ro, col ) )
 
                             gamestate = newgrid._1
                             loss = newgrid._2
                             win = newgrid._3
 
-                            println( "Field " + "(" + row + "," + column + ") got uncovered" )
+                            println( "Field " + "(" + ro + "," + col + ") got uncovered" )
                             println( grid.toString )
 
                             if ( loss ) println( "you're dead!" )
@@ -101,9 +100,9 @@ class TUI {
 
     }
 
-    private def newGame: Unit = {
+    private def newGame = {
         println( "new game starts now" )
-        grid = MineFieldGrid( 8, 8, 10 ) //chooseGrid
+        grid = MineFieldGrid( size._1, size._2, size._3 ) //chooseGrid
         firstMove = true
         println( grid.toString )
     }
