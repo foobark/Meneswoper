@@ -6,8 +6,6 @@ import scala.collection.mutable.HashSet
 
 
 case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, val initial_field: ( Int, Int ) = ( 0, 0 ) ) {
-    
-    type GridState = Array[Array[MineFieldState]]
 
     if ( minecount >= xsize * ysize ) throw new IllegalArgumentException( "Too many mines for grid size" )
 
@@ -30,7 +28,7 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
     populateField()
 
     //get a copy of the internal grid
-    def getGridState(): GridState = grid map( x => x map (_.state))
+    def getGridState(): GridState = grid map( x => (x map (_.state)) toIndexedSeq)
     /*
 	 * 
 	 * @Return: tupel containing updated grid, Boolean indicating whether a mine was uncovered and finally a Boolean
