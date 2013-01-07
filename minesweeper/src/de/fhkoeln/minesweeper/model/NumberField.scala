@@ -17,5 +17,6 @@ case class NumberField(override val state: MineFieldState ) extends Field( false
         NumberField( MineFieldState.uncovered( adjacent ) )
     }
 
+    override def toString() = "NumberField - state: " + state.toString
 }
 

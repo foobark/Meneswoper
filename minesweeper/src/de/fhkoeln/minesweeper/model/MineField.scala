@@ -16,6 +16,8 @@ case class MineField private (override val state: MineFieldState = MineFieldStat
         checkUnmarkConstraint
         MineField.covered
     }
+    
+    override def toString() = "MineField - state: " + state.toString
 }
 
 object MineField {
