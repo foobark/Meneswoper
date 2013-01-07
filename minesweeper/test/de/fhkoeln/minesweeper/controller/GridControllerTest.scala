@@ -75,17 +75,43 @@ class GridControllerTest extends SpecificationWithJUnit {
         }
     }
     
-    "A GridController controlling a 10 * 10 field" should {
+    "A GridController controlling a 10 * 10 field with 98 mines" should {
         val controller= new GridController()
         val reactor = new MockReactor(controller)
         val diff = (10, 10, 98)
         
-        "Trigger a GridUpdate" in {
-            //Test has a small chance of failing if both empty fields get placed
-            //next to each other. reactor.gameWon will be true then
+        "Trigger a GridUpdate" in {  
             controller.startNewGame(diff)
             controller.uncoverPosition(0,0)
             reactor.gridUpdate must beTrue
+        }
+        
+        "Trigger a GridUpdate and mark the field" in {
+            controller.startNewGame(diff)
+            controller.uncoverPosition(0,0)
+            reactor.gridUpdate = false
+            controller.markPosition(5,5)
+            reactor.gridUpdate must beTrue
+            reactor.gameWon must beFalse
+            reactor.gameLost must beFalse
+            reactor.gridReceived(5)(5).marked must beTrue
+            reactor.gridReceived.flatten.count(_.uncovered) must be_==(1)
+            reactor.gridReceived.flatten.count(_.covered) must be_== (98)
+        }
+        
+        "Trigger a GridUpdate and unmark the field" in {
+            controller.startNewGame(diff)
+            controller.uncoverPosition(0,0)
+            reactor.gridUpdate = false
+            controller.markPosition(5,5)
+            reactor.gridUpdate = false
+            controller.unmarkPosition(5, 5)
+            reactor.gridUpdate must beTrue
+            reactor.gameWon must beFalse
+            reactor.gameLost must beFalse
+            reactor.gridReceived(5)(5).marked must beFalse
+            reactor.gridReceived.flatten.count(_.uncovered) must be_==(1)
+            reactor.gridReceived.flatten.count(_.covered) must be_== (99)
         }
     }
 }
