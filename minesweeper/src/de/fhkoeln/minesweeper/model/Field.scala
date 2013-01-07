@@ -18,15 +18,6 @@ abstract case class Field(val armed:Boolean = false, val state: MineFieldState =
 
     //Uncovering is one time operation
     def uncover(): Field
-
-    override def toString: String = {
-        state match {
-            case t: MineFieldState.triggered => "*"
-            case MineFieldState.uncovered(x) => x.toString;
-            case c: MineFieldState.covered   => "H"
-            case m: MineFieldState.marked    => "#"
-        }
-    }
     
     protected def checkMarkedConstraint = if(uncovered || triggered) throw new IllegalArgumentException("can't mark uncovered Field")
     protected def checkUncoveredConstraint = if(marked) throw new IllegalArgumentException("Can't uncover marked Field")
