@@ -51,7 +51,9 @@ class GridControllerTest extends SpecificationWithJUnit {
         
         "Not uncover a mine the first time and tell me i won the game" in {
             controller.startNewGame(diff)
+            reactor.gridUpdate = false
             controller.uncoverPosition(0, 0)
+            reactor.gridUpdate must beFalse
             reactor.gameLost must beFalse
             reactor.gameWon must beTrue
             reactor.gridReceived(0)(0).uncovered must beTrue
