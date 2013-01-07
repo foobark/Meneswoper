@@ -1,5 +1,5 @@
 package de.fhkoeln.minesweeper
 
 package object model {
-	type GridState = IndexedSeq[IndexedSeq[MineFieldState]]
+	type GridState = List[List[MineFieldState]]
 }
