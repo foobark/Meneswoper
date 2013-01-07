@@ -6,7 +6,7 @@ class GridReactorTest extends SpecificationWithJUnit {
 
     "A GridReactor" should {
         
-        val controller = new MockGridController()
+        //val controller = new MockGridController()
         
         "Be notified when a new game starts and fetch the grid" in {
             

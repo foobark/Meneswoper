@@ -27,11 +27,11 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
 
     populateField()
 
-    //get a copy of the internal grid
+    //get a representation of the State of the grid
     def getGridState(): GridState = grid map( x => (x map (_.state)) toIndexedSeq)
+   
     /*
-	 * 
-	 * @Return: tupel containing updated grid, Boolean indicating whether a mine was uncovered and finally a Boolean
+	 *  @Return: tupel containing updated grid, Boolean indicating whether a mine was uncovered and finally a Boolean
 	 * if everything besides the mines was uncovered.
 	 */
     def uncoverField( pos: ( Int, Int ) ): ( GridState, Boolean, Boolean ) = {
