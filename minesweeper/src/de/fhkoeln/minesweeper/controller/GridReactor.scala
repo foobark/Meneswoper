@@ -1,10 +1,14 @@
 package de.fhkoeln.minesweeper.controller
 
-abstract class GridReactor() {
-	
+abstract class GridReactor(protected var controller: GridController) {
+    
+    listenTo(controller)
+    
     def react(e: GridEvent)
     
-    def listenTo(controller: GridController) = {
-        controller.register(this)
+    def listenTo(contr: GridController) = {
+        require(contr != null)
+        contr.register(this)
+        controller = contr
     }
 }
