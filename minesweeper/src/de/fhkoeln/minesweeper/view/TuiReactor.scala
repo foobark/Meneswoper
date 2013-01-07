@@ -28,49 +28,51 @@ class TuiReactor( controller: GridController ) extends GridReactor( controller )
 
     def processInputLine( input: String ): Boolean = {
 
-        input.filter( c => c != ' ' ).split( ',' ).toList match {
+        !gameEnd &&
+            (
+                input.filter( c => c != ' ' ).split( ',' ).toList match {
 
-            case row :: column :: cmd :: Nil => {
-                var ro = row.toInt
-                var col = column.toInt
-                if ( cmd == "m" ) controller.markPosition( ro, col )
-                if ( cmd == "u" ) controller.unmarkPosition( ro, col )
-                true
-            }
+                    case row :: column :: cmd :: Nil => {
+                        var ro = row.toInt
+                        var col = column.toInt
+                        if ( cmd == "m" ) controller.markPosition( ro, col )
+                        if ( cmd == "u" ) controller.unmarkPosition( ro, col )
+                        true
+                    }
 
-            case row :: column :: Nil => {
-                var ro = row.toInt
-                var col = column.toInt
-                controller.uncoverPosition( ro, col )
-                true
-            }
+                    case row :: column :: Nil => {
+                        var ro = row.toInt
+                        var col = column.toInt
+                        controller.uncoverPosition( ro, col )
+                        true
+                    }
 
-            case "q" :: Nil => {
-                println( generateOutput( 'q' ) )
-                false
-            }
+                    case "q" :: Nil => {
+                        println( generateOutput( 'q' ) )
+                        false
+                    }
 
-            case "n" :: Nil => {
-                println( generateOutput( 'n' ) )
-                difficultySelect = true
-                true
-            }
+                    case "n" :: Nil => {
+                        println( generateOutput( 'n' ) )
+                        difficultySelect = true
+                        true
+                    }
 
-            case diff :: Nil if difficultySelect && difficulties.contains( diff ) => {
-                val op = diff.charAt( 0 )
-                controller.startNewGame( chooseDifficulty( op ) )
-                println( generateOutput( op ) )
-                true
-            }
+                    case diff :: Nil if difficultySelect && difficulties.contains( diff ) => {
+                        val op = diff.charAt( 0 )
+                        controller.startNewGame( chooseDifficulty( op ) )
+                        println( generateOutput( op ) )
+                        true
+                    }
 
-            case Nil => true
+                    case Nil => true
 
-            case _ => {
-                println( generateOutput( '\0' ) )
-                true
-            }
-
-        }
+                    case _ => {
+                        println( generateOutput( '\0' ) )
+                        true
+                    }
+                }
+            )
     }
 
     def generateOutput( cmd: Char ): String = {
