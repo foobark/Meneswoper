@@ -98,7 +98,7 @@ class MineFieldGridTest extends SpecificationWithJUnit {
         }
 
         "Have exactly 2 mines" in {
-            for (i <- 0 until 2; j <- 0 until 2) grid.uncoverField((i,j))
+            for (i <- 0 until 3; j <- 0 until 3) grid.uncoverField((i,j))
             grid.getGridState().flatten count ( x => x.triggered ) must be_==( 2 )
         }
     }
