@@ -104,5 +104,14 @@ class MineFieldGridTest extends SpecificationWithJUnit {
         
     }
     
-    
+    "A MineFieldGrid of size 100 * 100 without mines" should {
+        val grid = new MineFieldGrid(50, 50, 0)
+        
+        "be won immediately and completely uncovered" in {
+            val (state, loss, win) = grid.uncoverField(25, 25)
+            loss must beFalse
+            win must beTrue
+            state.flatten.forall(_.uncovered) must beTrue
+        }
+    }
 }
