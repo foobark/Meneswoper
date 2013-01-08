@@ -8,7 +8,9 @@ class GridControllerTest extends SpecificationWithJUnit {
 
         var gridReceived: GridState = null
 
-        var gridUpdate = false
+        var fieldUncovered = false
+        var fieldMarked = false
+        var fieldUnmarked = false
         var gameWon = false
         var gameLost = false
         var newGame = false
@@ -19,8 +21,16 @@ class GridControllerTest extends SpecificationWithJUnit {
                     newGame = true
                 }
 
-                case gu: GridUpdated => {
-                    gridUpdate = true
+                case fu: FieldUncovered => {
+                    fieldUncovered = true
+                }
+                
+                case fm: FieldMarked => {
+                    fieldMarked = true
+                }
+                
+                case fum: FieldUnmarked => {
+                    fieldUnmarked = true
                 }
 
                 case gw: GameWon => {
@@ -43,7 +53,9 @@ class GridControllerTest extends SpecificationWithJUnit {
         "Create a new 1 * 2 field with all fields covered" in {
             controller.startNewGame(diff)
             reactor.newGame must beTrue
-            reactor.gridUpdate must beFalse
+            reactor.fieldUncovered must beFalse
+            reactor.fieldMarked must beFalse
+            reactor.fieldUnmarked must beFalse
             reactor.gameLost must beFalse
             reactor.gameWon must beFalse
             reactor.gridReceived(0) forall(_.covered) must beTrue
@@ -52,6 +64,7 @@ class GridControllerTest extends SpecificationWithJUnit {
         "Not uncover a mine the first time and tell me i won the game" in {
             controller.startNewGame(diff)
             controller.uncoverPosition(0, 0)
+            reactor.fieldUncovered must beFalse
             reactor.gameLost must beFalse
             reactor.gameWon must beTrue
             reactor.gridReceived(0)(0).uncovered must beTrue
@@ -59,6 +72,7 @@ class GridControllerTest extends SpecificationWithJUnit {
             
             controller.startNewGame(diff)
             controller.uncoverPosition(0, 1)
+            reactor.fieldUncovered
             reactor.gameLost must beFalse
             reactor.gameWon must beTrue
             reactor.gridReceived(0)(1).uncovered must beTrue
@@ -83,15 +97,15 @@ class GridControllerTest extends SpecificationWithJUnit {
         "Trigger a GridUpdate" in {  
             controller.startNewGame(diff)
             controller.uncoverPosition(0,0)
-            reactor.gridUpdate must beTrue
+            reactor.fieldUncovered must beTrue
         }
         
         "Trigger a GridUpdate and mark the field" in {
             controller.startNewGame(diff)
             controller.uncoverPosition(0,0)
-            reactor.gridUpdate = false
             controller.markPosition(5,5)
-            reactor.gridUpdate must beTrue
+            reactor.fieldUncovered must beTrue
+            reactor.fieldMarked must beTrue
             reactor.gameWon must beFalse
             reactor.gameLost must beFalse
             reactor.gridReceived(5)(5).marked must beTrue
@@ -102,11 +116,9 @@ class GridControllerTest extends SpecificationWithJUnit {
         "Trigger a GridUpdate and unmark the field" in {
             controller.startNewGame(diff)
             controller.uncoverPosition(0,0)
-            reactor.gridUpdate = false
             controller.markPosition(5,5)
-            reactor.gridUpdate = false
             controller.unmarkPosition(5, 5)
-            reactor.gridUpdate must beTrue
+            reactor.fieldUnmarked must beTrue
             reactor.gameWon must beFalse
             reactor.gameLost must beFalse
             reactor.gridReceived(5)(5).marked must beFalse

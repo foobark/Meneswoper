@@ -1,11 +1,15 @@
 package de.fhkoeln.minesweeper.controller
 
-abstract class GridEvent(val grid: GridState) 
+abstract class GridEvent( val grid: GridState, val field: ( Int, Int ) )
 
-class NewGameStarted(override val grid: GridState) extends GridEvent(grid)
+class NewGameStarted( grid: GridState) extends GridEvent( grid, (0,0) )
 
-class GridUpdated(override val grid: GridState) extends GridEvent(grid)
+class FieldUncovered( grid: GridState, field: ( Int, Int ) ) extends GridEvent( grid, field )
 
-class GameWon(override val grid: GridState) extends GridEvent(grid)
+class FieldMarked( grid: GridState, field: ( Int, Int ) ) extends GridEvent( grid, field )
 
-class GameLost(override val grid: GridState) extends GridEvent(grid)
+class FieldUnmarked( grid: GridState, field: ( Int, Int ) ) extends GridEvent( grid, field )
+
+class GameWon( grid: GridState ) extends GridEvent( grid, (0,0) )
+
+class GameLost( grid: GridState) extends GridEvent( grid, (0,0) )

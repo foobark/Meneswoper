@@ -3,8 +3,6 @@ package de.fhkoeln.minesweeper.model
 import scala.util.Random
 import scala.collection.mutable.HashSet
 
-
-
 case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, val initial_field: ( Int, Int ) = ( 0, 0 ) ) {
 
     if ( minecount >= xsize * ysize ) throw new IllegalArgumentException( "Too many mines for grid size" )
@@ -28,10 +26,10 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
     populateField()
 
     //get a representation of the State of the grid
-    def getGridState(): GridState = grid map( x => (x map (_.state)) toIndexedSeq)
-   
+    def getGridState(): GridState =  grid map( x =>  x.toList.map( _.state )  ) toList
+
     /*
-	 *  @Return: tupel containing updated grid, Boolean indicating whether a mine was uncovered and finally a Boolean
+	 *  @Return: tuple containing updated grid, Boolean indicating whether a mine was uncovered and finally a Boolean
 	 * if everything besides the mines was uncovered.
 	 */
     def uncoverField( pos: ( Int, Int ) ): ( GridState, Boolean, Boolean ) = {
@@ -58,7 +56,7 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         try {
             val y = pos._1
             val x = pos._2
-            grid( y )( x ) = grid(y)(x).mark
+            grid( y )( x ) = grid( y )( x ).mark
             getGridState
         } catch {
             case iae: IllegalArgumentException          => throw new MineGridException( "Trying to mark uncovered field at: " + pos.toString() )
@@ -71,16 +69,16 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         try {
             val y = pos._1
             val x = pos._2
-            grid( y )( x ) = grid(y)(x).unmark
+            grid( y )( x ) = grid( y )( x ).unmark
             getGridState
         } catch {
             case aioobe: ArrayIndexOutOfBoundsException => throw new MineGridException( "Invalid position: " + pos.toString() )
         }
 
     }
-    
-    override def toString : String = {
-        grid.map(_.mkString(" ")).mkString("\n")
+
+    override def toString: String = {
+        grid.map( _.mkString( " " ) ).mkString( "\n" )
     }
 
     //Count  marked fields adjacent to the specified one
@@ -143,7 +141,6 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         grid( y )( x ) eq null
     }
 
-
     //auxilary method for uncovering fields
     //keep recursively uncovering fields until a number field or marked field is uncovered
     private def doUncover( position: ( Int, Int ) ) {
@@ -152,7 +149,7 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
         val field = grid( y )( x )
 
         if ( !field.marked ) {
-            grid(y)(x) = field.uncover()
+            grid( y )( x ) = field.uncover()
             mineUncovered = field.armed
             uncovered.add( position )
         }

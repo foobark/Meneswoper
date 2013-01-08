@@ -33,8 +33,8 @@ class GridController {
         xboundaries = 0 until xsize
         grid = null
         newgame = true
-        val coveredRow = for ( i <- 0 until difficulty._2 ) yield MineFieldState.covered()
-        val stategrid: GridState = for ( i <- 0 until difficulty._1 ) yield coveredRow
+        val coveredRow = List[ MineFieldState ]() ++ ( for ( i <- 0 until difficulty._2 ) yield MineFieldState.covered() )
+        val stategrid: GridState = List() ++ ( for ( i <- 0 until difficulty._1 ) yield coveredRow )
         update( new NewGameStarted( stategrid ) )
     }
 
@@ -44,10 +44,15 @@ class GridController {
             grid = MineFieldGrid( ysize, xsize, difficulty._3, ( y, x ) )
             newgame = false
         }
-        val ( newgrid, lost, won ) = grid.uncoverField( y, x )
+        val result = grid.uncoverField( y, x )
+        val newgrid = result._1
+        val lost = result._2
+        val won = result._3
         if ( lost ) update( new GameLost( newgrid ) )
-        else if ( won ) update( new GameWon( newgrid ) )
-        else update( new GridUpdated( newgrid ) )
+        else {
+            if ( won ) update( new GameWon( newgrid ) )
+            else update( new FieldUncovered( newgrid, (y,x) ) )
+        }
 
     }
 
@@ -55,14 +60,14 @@ class GridController {
         boundaryCheck( y, x )
         if ( !newgame ) {
             grid.markField( ( y, x ) )
-            update( new GridUpdated( grid.getGridState() ) )
+            update( new FieldMarked( grid.getGridState(), (y,x) ) )
         }
     }
 
     def unmarkPosition( y: Int, x: Int ) = {
         boundaryCheck( y, x )
         grid.unmarkField( ( y, x ) )
-        update( new GridUpdated( grid.getGridState() ) )
+        update( new FieldUnmarked( grid.getGridState(), (y,x) ) )
     }
 
     private def boundaryCheck( y: Int, x: Int ) = require( ( yboundaries contains y ) && ( xboundaries contains x ) )
