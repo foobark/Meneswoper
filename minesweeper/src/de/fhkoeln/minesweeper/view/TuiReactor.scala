@@ -60,6 +60,7 @@ class TuiReactor( controller: GridController ) extends GridReactor( controller )
 
                     case diff :: Nil if difficultySelect && difficulties.contains( diff ) => {
                         val op = diff.charAt( 0 )
+                        difficultySelect = false
                         controller.startNewGame( chooseDifficulty( op ) )
                         println( generateOutput( op ) )
                         true
@@ -79,14 +80,14 @@ class TuiReactor( controller: GridController ) extends GridReactor( controller )
         cmd match {
             case 'q' => "Game quit"
             case 'n' => """Select a difficulty:
-    		        		easy   -> e
-    						medium -> m
-    		        		hard   -> h
+            				easy   -> e
+            				medium -> m
+            				hard   -> h
     		        		""".stripMargin
-            case 'e' => "Difficulty easy selected\n\n"
-            case 'm' => "Difficulty medium selected\n\n"
-            case 'h' => "Difficulty hard selected\n\n"
-            case _   => "Invalid Input\n\n"
+            case 'e' if difficultySelect => "Difficulty easy selected\n\n"
+            case 'm' if difficultySelect => "Difficulty medium selected\n\n"
+            case 'h' if difficultySelect => "Difficulty hard selected\n\n"
+            case _   => "Invalid input\n\n"
         }
     }
 
