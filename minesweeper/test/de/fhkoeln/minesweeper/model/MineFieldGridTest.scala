@@ -101,6 +101,7 @@ class MineFieldGridTest extends SpecificationWithJUnit {
             for (i <- 0 until 3; j <- 0 until 3) grid.uncoverField((i,j))
             grid.getGridState().flatten count ( x => x.triggered ) must be_==( 2 )
         }
+        
     }
     
     
