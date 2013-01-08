@@ -51,7 +51,7 @@ class GridController {
         if ( lost ) update( new GameLost( newgrid ) )
         else {
             if ( won ) update( new GameWon( newgrid ) )
-            else update( new FieldUncovered( newgrid, (y,x) ) )
+            else update( new FieldUncovered( newgrid, ( y, x ) ) )
         }
 
     }
@@ -60,14 +60,16 @@ class GridController {
         boundaryCheck( y, x )
         if ( !newgame ) {
             grid.markField( ( y, x ) )
-            update( new FieldMarked( grid.getGridState(), (y,x) ) )
+            update( new FieldMarked( grid.getGridState(), ( y, x ) ) )
         }
     }
 
     def unmarkPosition( y: Int, x: Int ) = {
         boundaryCheck( y, x )
-        grid.unmarkField( ( y, x ) )
-        update( new FieldUnmarked( grid.getGridState(), (y,x) ) )
+        if ( !newgame ) {
+            grid.unmarkField( ( y, x ) )
+            update( new FieldUnmarked( grid.getGridState(), ( y, x ) ) )
+        }
     }
 
     private def boundaryCheck( y: Int, x: Int ) = require( ( yboundaries contains y ) && ( xboundaries contains x ) )
