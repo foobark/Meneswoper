@@ -1,13 +1,15 @@
-package de.fhkoeln.minesweeper.view
+package minesweeper.view
+
+import minesweeper.view.TuiReactor;
 
 import org.specs.SpecificationWithJUnit
-import de.fhkoeln.minesweeper.controller.GridController
-import de.fhkoeln.minesweeper.controller.GameLost
-import de.fhkoeln.minesweeper.controller.GameWon
-import de.fhkoeln.minesweeper.controller.FieldUncovered
-import de.fhkoeln.minesweeper.controller.FieldMarked
-import de.fhkoeln.minesweeper.controller.FieldUnmarked
-import de.fhkoeln.minesweeper.model.MineFieldState
+import minesweeper.controller.GridController
+import minesweeper.controller.GameLost
+import minesweeper.controller.GameWon
+import minesweeper.controller.FieldUncovered
+import minesweeper.controller.FieldMarked
+import minesweeper.controller.FieldUnmarked
+import minesweeper.model.MineFieldState
 
 class TUIReactorTest extends SpecificationWithJUnit {
 

@@ -1,33 +1,40 @@
-package de.fhkoeln.minesweeper.model
+package minesweeper.model
 
 import scala.util.Random
 import scala.collection.mutable.HashSet
 import scala.annotation.tailrec
 
-case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, val initial_field: ( Int, Int ) = ( 0, 0 ) ) {
+case class MineFieldGrid( val ysize: Int,
+                          val xsize: Int,
+                          val minecount: Int,
+                          mine_free: List[( Int, Int )] = ( 0, 0 ) :: Nil ) {
 
     require( minecount < xsize * ysize, { "Too many mines for grid size" } )
 
     require( minecount >= 0, { "minecount must be positive" } )
 
     require( xsize > 0 && ysize > 0, { "xsize and ysize must be positive" } )
+    
+    require( (xsize * ysize) > 1, {"Grid must have at least 2 fields"})
 
-    require( initial_field._1 >= 0 && initial_field._2 >= 0, { "Initial field coordinates must be positive" } )
+    require( mine_free forall ( x => x._1 >= 0 && x._2 >= 0 ), { "Initial field coordinates must be positive" } )
 
-    private var grid = Array.ofDim[ Field ]( ysize, xsize )
+    private var grid = Array.ofDim[Field]( ysize, xsize )
 
     private val xboundaries = 0 until xsize
 
     private val yboundaries = 0 until ysize
 
-    private var mineUncovered = false
+    private var gameLost = false
+
+    private var gameWon = false
 
     private var uncovered = 0
 
-    populateField()
+    populateField( mine_free )
 
     //get a representation of the State of the grid
-    def getGridState(): GridState = grid map ( x => x.toList.map( _.state ) ) toList
+    def getGridState(): GridState = grid map ( _.toList.map( _.state ) ) toList
 
     /*
 	 *  @Return: tuple containing updated grid, Boolean indicating whether a mine was uncovered and finally a Boolean
@@ -36,7 +43,7 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
     def uncoverField( pos: ( Int, Int ) ): ( GridState, Boolean, Boolean ) = {
         try {
             doUncover( pos :: Nil )
-            ( getGridState, mineUncovered, gameWon() )
+            ( getGridState, gameLost, won() )
         } catch {
             case aaobe: ArrayIndexOutOfBoundsException => throw new MineGridException( "Invalid position: " + pos.toString() )
         }
@@ -72,36 +79,33 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
     }
 
     //setup the mine grid, i.e. initialize all fields.
-    private def populateField() {
+    private def populateField( mine_excludes: List[( Int, Int )] ) {
         //place mines first...
-        placeMines()
+        placeMines( mine_excludes )
         //...then fill the rest and calculate no. of adjacent mines for fields
-        for ( i <- 0 until ysize; j <- 0 until xsize; if fieldEmpty( i, j ) ) {
-            //make sure no double placements happen (and mines get overwritten)
+        for ( i <- 0 until ysize; j <- 0 until xsize; if fieldEmpty( i, j ) )
             grid( i )( j ) = NumberField( MineFieldState.covered( countAdjacentMines( i, j ) ) )
-        }
     }
 
     //Position mines randomly on the grid. Avoid initial position
-    private def placeMines() {
-        var placed = 0
-        val randy = new Random()
-        while ( placed != minecount ) {
-            val row = randy.nextInt( ysize )
-            val col = randy.nextInt( xsize )
-            //make sure same field doesn't get populated twice
-            if ( fieldEmpty( row, col ) && ( row, col ) != initial_field ) {
-                grid( row )( col ) = MineField()
-                placed += 1
-            }
+    private def placeMines( excludes: List[( Int, Int )] ) {
+        def rndstream: Stream[( Int, Int )] = {
+            def s: Stream[( Int, Int )] = ( Random.nextInt( ysize ), Random.nextInt( xsize ) ) #:: s;
+            s
         }
+        def posPermitted( pos: ( Int, Int ) ): Boolean = {
+            (!excludes.contains( pos ) ) &&
+                fieldEmpty( pos._1, pos._2 )
+        }
+        val positions = rndstream.filter( posPermitted )
+        positions.take( minecount ).foreach( x => grid( x._1 )( x._2 ) = MineField() )
     }
 
     //Count the number of Mines adjacent to a field
     private def countAdjacentMines( y: Int, x: Int ): Int = getAdjacentPos( y, x ) count ( isMineField )
 
     //get adjacent, valid positions to a field
-    private def getAdjacentPos( y: Int, x: Int ): List[ ( Int, Int ) ] = {
+    private def getAdjacentPos( y: Int, x: Int ): List[( Int, Int )] = {
         List(
             ( y + 1, x ),
             ( y + 1, x - 1 ),
@@ -121,33 +125,32 @@ case class MineFieldGrid( val ysize: Int, val xsize: Int, val minecount: Int, va
 
     //check whether the position has already been populated with a field
     private def fieldEmpty( y: Int, x: Int ): Boolean = {
-        grid( y )( x ) eq null
+    	grid( y )( x ) == null 
     }
 
     //auxilary method for uncovering fields
     //keep recursively uncovering fields until a number field or marked field is uncovered
 
-    private def doUncover( positions: List[ ( Int, Int ) ] ) {
-        positions match {
-            case head :: tail => {
-                val ( y, x ) = head
-                val field = grid( y )( x )
-                if ( field.covered ) {
-                    grid( y )( x ) = field.uncover()
-                    uncovered += 1
-                    mineUncovered = field.armed
-                }
-                if ( field.adjacent == 0 && !field.armed && !field.marked )
-                    doUncover( (tail ++ getAdjacentPos( y, x ).filter( z => grid( z._1 )( z._2 ).covered )).distinct )
+    private def doUncover( positions: List[( Int, Int )] ) {
+        if ( positions.nonEmpty ) {
+            val ( y, x ) = positions.head
+            val field = grid( y )( x )
+            if ( field.covered ) {
+                grid( y )( x ) = field.uncover()
+                uncovered += 1
+                gameLost = field.armed
             }
-
-            case nil => {}
+            if ( field.adjacent == 0 && !field.armed && !field.marked ) {
+                val neighbours = getAdjacentPos( y, x ).filter( z => grid( z._1 )( z._2 ).covered )
+                doUncover( ( positions.tail ++ neighbours ).distinct )
+            }
         }
     }
 
     //method returning whether the game has been won or not
-    private def gameWon(): Boolean = uncovered == xsize * ysize - minecount && !mineUncovered
+    def won(): Boolean = uncovered == xsize * ysize - minecount && !gameLost
 
+    def lost: Boolean = gameLost
 }
 
 case class MineGridException( s: String ) extends Exception

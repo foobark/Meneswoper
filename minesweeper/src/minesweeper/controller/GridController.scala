@@ -1,8 +1,8 @@
-package de.fhkoeln.minesweeper.controller
+package minesweeper.controller
 
 import scala.collection.mutable.LinkedList
-import de.fhkoeln.minesweeper.model.MineFieldGrid
-import de.fhkoeln.minesweeper.model.MineFieldState
+import minesweeper.model.MineFieldGrid
+import minesweeper.model.MineFieldState
 
 class GridController {
 
@@ -41,7 +41,7 @@ class GridController {
     def uncoverPosition( y: Int, x: Int ) = {
         boundaryCheck( y, x )
         if ( newgame ) {
-            grid = MineFieldGrid( ysize, xsize, difficulty._3, ( y, x ) )
+            grid = MineFieldGrid( ysize, xsize, difficulty._3, ( y, x ) :: Nil)
             newgame = false
         }
         val result = grid.uncoverField( y, x )

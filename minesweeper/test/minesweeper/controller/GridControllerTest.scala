@@ -1,4 +1,7 @@
-package de.fhkoeln.minesweeper.controller
+package minesweeper.controller
+
+import minesweeper.controller.GridController;
+import minesweeper.controller.GridReactor;
 
 import org.specs.SpecificationWithJUnit
 

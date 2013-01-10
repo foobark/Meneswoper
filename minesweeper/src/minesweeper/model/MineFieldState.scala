@@ -1,4 +1,4 @@
-package de.fhkoeln.minesweeper.model
+package minesweeper.model
 
 abstract case class MineFieldState(val adjacent: Int) {
     def uncovered: Boolean = false

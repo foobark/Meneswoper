@@ -1,7 +1,7 @@
 
 
-import de.fhkoeln.minesweeper.view._
-import de.fhkoeln.minesweeper.controller._
+import minesweeper.view._
+import minesweeper.controller._
 object Minesweeper {
   
 

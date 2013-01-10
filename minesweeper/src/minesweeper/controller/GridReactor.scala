@@ -1,4 +1,4 @@
-package de.fhkoeln.minesweeper.controller
+package minesweeper.controller
 
 abstract class GridReactor(protected var controller: GridController) {
     

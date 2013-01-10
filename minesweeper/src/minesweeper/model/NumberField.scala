@@ -1,4 +1,4 @@
-package de.fhkoeln.minesweeper.model
+package minesweeper.model
 
 case class NumberField(override val state: MineFieldState ) extends Field( false, state ) {
 

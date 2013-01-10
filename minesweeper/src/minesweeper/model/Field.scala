@@ -1,4 +1,4 @@
-package de.fhkoeln.minesweeper.model
+package minesweeper.model
 
 abstract case class Field(val armed:Boolean = false, val state: MineFieldState = MineFieldState.covered(0) ) {
 

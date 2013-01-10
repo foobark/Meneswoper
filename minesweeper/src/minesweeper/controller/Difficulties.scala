@@ -1,4 +1,4 @@
-package de.fhkoeln.minesweeper.controller
+package minesweeper.controller
 
 object Difficulties {
     val easy = (8, 8, 10)

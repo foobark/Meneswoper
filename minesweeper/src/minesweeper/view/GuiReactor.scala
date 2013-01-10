@@ -1,7 +1,7 @@
-package de.fhkoeln.minesweeper.view
+package minesweeper.view
 
 import swing._
-import de.fhkoeln.minesweeper.controller._
+import minesweeper.controller._
 import swing.event._
 import GridBagPanel._
 import java.awt.Insets

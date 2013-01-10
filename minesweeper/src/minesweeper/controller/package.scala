@@ -1,4 +1,4 @@
-package de.fhkoeln.minesweeper
+package minesweeper
 
 package object controller {
 	type GridState = model.GridState

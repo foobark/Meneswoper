@@ -1,4 +1,6 @@
-package de.fhkoeln.minesweeper.model
+package minesweeper.model
+
+import minesweeper.model.MineField;
 
 import org.specs._
 

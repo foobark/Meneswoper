@@ -1,4 +1,4 @@
-package de.fhkoeln.minesweeper.model
+package minesweeper.model
 
 case class MineField private (override val state: MineFieldState = MineFieldState.covered( 0 ) ) extends Field( true, state ) {
 

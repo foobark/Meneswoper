@@ -1,4 +1,4 @@
-package de.fhkoeln.minesweeper.controller
+package minesweeper.controller
 
 abstract class GridEvent( val grid: GridState, val field: ( Int, Int ) )
 

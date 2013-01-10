@@ -1,9 +1,9 @@
 /**
  *
  */
-package de.fhkoeln.minesweeper.view
+package minesweeper.view
 
-import de.fhkoeln.minesweeper.controller._
+import minesweeper.controller._
 
 /**
  * @author ti614
