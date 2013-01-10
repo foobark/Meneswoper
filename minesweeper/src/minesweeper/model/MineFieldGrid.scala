@@ -14,8 +14,8 @@ case class MineFieldGrid( val ysize: Int,
     require( minecount >= 0, { "minecount must be positive" } )
 
     require( xsize > 0 && ysize > 0, { "xsize and ysize must be positive" } )
-    
-    require( (xsize * ysize) > 1, {"Grid must have at least 2 fields"})
+
+    require( ( xsize * ysize ) > 1, { "Grid must have at least 2 fields" } )
 
     require( mine_free forall ( x => x._1 >= 0 && x._2 >= 0 ), { "Initial field coordinates must be positive" } )
 
@@ -34,7 +34,7 @@ case class MineFieldGrid( val ysize: Int,
     populateField( mine_free )
 
     //get a representation of the State of the grid
-    def getGridState(): GridState = grid map ( _.toList.map( _.state ) ) toList
+    def getGridState(): GridState = grid map(  _.toList.map( _.state ) ) toList
 
     /*
 	 *  @Return: tuple containing updated grid, Boolean indicating whether a mine was uncovered and finally a Boolean
@@ -43,7 +43,7 @@ case class MineFieldGrid( val ysize: Int,
     def uncoverField( pos: ( Int, Int ) ): ( GridState, Boolean, Boolean ) = {
         try {
             doUncover( pos :: Nil )
-            ( getGridState, gameLost, won() )
+            ( getGridState, lost, won )
         } catch {
             case aaobe: ArrayIndexOutOfBoundsException => throw new MineGridException( "Invalid position: " + pos.toString() )
         }
@@ -89,16 +89,12 @@ case class MineFieldGrid( val ysize: Int,
 
     //Position mines randomly on the grid. Avoid initial position
     private def placeMines( excludes: List[( Int, Int )] ) {
-        def rndstream: Stream[( Int, Int )] = {
-            def s: Stream[( Int, Int )] = ( Random.nextInt( ysize ), Random.nextInt( xsize ) ) #:: s;
-            s
-        }
-        def posPermitted( pos: ( Int, Int ) ): Boolean = {
-            (!excludes.contains( pos ) ) &&
-                fieldEmpty( pos._1, pos._2 )
-        }
-        val positions = rndstream.filter( posPermitted )
-        positions.take( minecount ).foreach( x => grid( x._1 )( x._2 ) = MineField() )
+        def rndstream: Stream[( Int, Int )] =
+            ( Random.nextInt( ysize ), Random.nextInt( xsize ) ) #:: rndstream
+        def posPermitted( pos: ( Int, Int ) ): Boolean =
+            !excludes.contains( pos ) && fieldEmpty( pos._1, pos._2 )
+        val positions = rndstream.filter( posPermitted ).take( minecount )
+        positions.foreach( x => grid( x._1 )( x._2 ) = MineField() )
     }
 
     //Count the number of Mines adjacent to a field
@@ -106,7 +102,10 @@ case class MineFieldGrid( val ysize: Int,
 
     //get adjacent, valid positions to a field
     private def getAdjacentPos( y: Int, x: Int ): List[( Int, Int )] = {
-        List(
+        val offsets = ( -1 to 1 ) //zip (-1 until 1)
+        val combos = offsets.map( x => offsets.map((x,_)) ).flatten.toList
+        combos.map( (o: (Int, Int)) =>  (y + o._1, x + o._2)  ).filter( isValidPos )
+        /*List(
             ( y + 1, x ),
             ( y + 1, x - 1 ),
             ( y, x - 1 ),
@@ -114,7 +113,7 @@ case class MineFieldGrid( val ysize: Int,
             ( y - 1, x ),
             ( y - 1, x + 1 ),
             ( y, x + 1 ),
-            ( y + 1, x + 1 ) ).filter( isValidPos )
+            ( y + 1, x + 1 ) ).filter( isValidPos )*/
     }
 
     //check whether the field is an armed mine
@@ -125,7 +124,7 @@ case class MineFieldGrid( val ysize: Int,
 
     //check whether the position has already been populated with a field
     private def fieldEmpty( y: Int, x: Int ): Boolean = {
-    	grid( y )( x ) == null 
+        grid( y )( x ) == null 
     }
 
     //auxilary method for uncovering fields
@@ -148,7 +147,7 @@ case class MineFieldGrid( val ysize: Int,
     }
 
     //method returning whether the game has been won or not
-    def won(): Boolean = uncovered == xsize * ysize - minecount && !gameLost
+    def won: Boolean = uncovered == xsize * ysize - minecount && !gameLost
 
     def lost: Boolean = gameLost
 }
