@@ -1,8 +1,5 @@
 package minesweeper.controller
 
-import minesweeper.controller.GridController;
-import minesweeper.controller.GridReactor;
-
 import org.specs.SpecificationWithJUnit
 
 class GridControllerTest extends SpecificationWithJUnit {

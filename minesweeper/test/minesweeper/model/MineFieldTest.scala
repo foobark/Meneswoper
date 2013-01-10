@@ -1,8 +1,6 @@
 package minesweeper.model
 
-import minesweeper.model.MineField;
-
-import org.specs._
+import org.specs.SpecificationWithJUnit
 
 class MineFieldTest extends SpecificationWithJUnit {
 

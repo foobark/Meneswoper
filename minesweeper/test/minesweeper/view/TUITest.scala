@@ -1,7 +1,5 @@
 package minesweeper.view
 
-import minesweeper.view.TuiReactor;
-
 import org.specs.SpecificationWithJUnit
 import minesweeper.controller.GridController
 import minesweeper.controller.GameLost
