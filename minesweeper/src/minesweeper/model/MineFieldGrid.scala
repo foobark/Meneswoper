@@ -34,44 +34,34 @@ case class MineFieldGrid( val ysize: Int,
     populateField( mine_free )
 
     //get a representation of the State of the grid
-    def getGridState(): GridState = grid map(  _.toList.map( _.state ) ) toList
+    def getGridState(): GridState = grid map ( _.toList.map( _.state ) ) toList
 
     /*
 	 *  @Return: tuple containing updated grid, Boolean indicating whether a mine was uncovered and finally a Boolean
 	 * if everything besides the mines was uncovered.
 	 */
     def uncoverField( pos: ( Int, Int ) ): ( GridState, Boolean, Boolean ) = {
-        try {
-            doUncover( pos :: Nil )
-            ( getGridState, lost, won )
-        } catch {
-            case aaobe: ArrayIndexOutOfBoundsException => throw new MineGridException( "Invalid position: " + pos.toString() )
-        }
-
+        require( inBoundaries( pos ), throw new MineGridException( "Invalid position: " + pos.toString() ) )
+        doUncover( pos :: Nil )
+        ( getGridState, lost, won )
     }
 
     //mark the Field at specified position. Throws Exception if said field is already uncovered
     def markField( pos: ( Int, Int ) ): GridState = {
-        try {
-            val ( y, x ) = pos
-            grid( y )( x ) = grid( y )( x ).mark
-            getGridState
-        } catch {
-            case iae: IllegalArgumentException          => throw new MineGridException( "Trying to mark uncovered field at: " + pos.toString() )
-            case aioobe: ArrayIndexOutOfBoundsException => throw new MineGridException( "Invalid position: " + pos.toString() )
-        }
+        val ( y, x ) = pos
+        require( inBoundaries( pos ), throw new MineGridException( "Invalid position: " + pos.toString() ) )
+        require( !grid( y )( x ).uncovered, throw new MineGridException( "Trying to mark uncovered field at: " + pos.toString() ) )
+        grid( y )( x ) = grid( y )( x ).mark
+        getGridState
+
     }
 
     //unmark the Field at specified position
     def unmarkField( pos: ( Int, Int ) ): GridState = {
-        try {
-            val ( y, x ) = pos
-            grid( y )( x ) = grid( y )( x ).unmark
-            getGridState
-        } catch {
-            case aioobe: ArrayIndexOutOfBoundsException => throw new MineGridException( "Invalid position: " + pos.toString() )
-        }
-
+        require( inBoundaries( pos ), throw new MineGridException( "Invalid position: " + pos.toString() ) )
+        val ( y, x ) = pos
+        grid( y )( x ) = grid( y )( x ).unmark
+        getGridState
     }
 
     override def toString: String = {
@@ -102,29 +92,21 @@ case class MineFieldGrid( val ysize: Int,
 
     //get adjacent, valid positions to a field
     private def getAdjacentPos( y: Int, x: Int ): List[( Int, Int )] = {
-        val offsets = ( -1 to 1 ) //zip (-1 until 1)
-        val combos = offsets.map( x => offsets.map((x,_)) ).flatten.toList
-        combos.map( (o: (Int, Int)) =>  (y + o._1, x + o._2)  ).filter( isValidPos )
-        /*List(
-            ( y + 1, x ),
-            ( y + 1, x - 1 ),
-            ( y, x - 1 ),
-            ( y - 1, x - 1 ),
-            ( y - 1, x ),
-            ( y - 1, x + 1 ),
-            ( y, x + 1 ),
-            ( y + 1, x + 1 ) ).filter( isValidPos )*/
+        val offsets = ( -1 to 1 )
+        //every combination pair of the values from -1 to 1
+        val combos = offsets.map( x => offsets.map( ( x, _ ) ) ).flatten.toList
+        combos.map( ( o: ( Int, Int ) ) => ( y + o._1, x + o._2 ) ).filter( isValidPos )
     }
 
     //check whether the field is an armed mine
     private def isMineField( pos: ( Int, Int ) ): Boolean = grid( pos._1 )( pos._2 ).armed
 
     //Check if position is within boundaries
-    private def isValidPos( pos: ( Int, Int ) ): Boolean = yboundaries.contains( pos._1 ) && xboundaries.contains( pos._2 ) && !fieldEmpty( pos._1, pos._2 )
+    private def isValidPos( pos: ( Int, Int ) ): Boolean = inBoundaries( pos ) && !fieldEmpty( pos._1, pos._2 )
 
     //check whether the position has already been populated with a field
     private def fieldEmpty( y: Int, x: Int ): Boolean = {
-        grid( y )( x ) == null 
+        grid( y )( x ) == null
     }
 
     //auxilary method for uncovering fields
@@ -150,6 +132,10 @@ case class MineFieldGrid( val ysize: Int,
     def won: Boolean = uncovered == xsize * ysize - minecount && !gameLost
 
     def lost: Boolean = gameLost
+
+    private def inBoundaries( pos: ( Int, Int ) ): Boolean = {
+        yboundaries.contains( pos._1 ) && xboundaries.contains( pos._2 )
+    }
 }
 
 case class MineGridException( s: String ) extends Exception
