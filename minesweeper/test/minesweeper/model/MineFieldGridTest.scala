@@ -7,19 +7,19 @@ class MineFieldGridTest extends SpecificationWithJUnit {
     "A MineField Grid of size 1 without mines" should {
 
         "not be able to be constructed" in {
-            MineFieldGrid( 1, 1, 0 ) must throwA[IllegalArgumentException]
+            MineFieldGrid( 1, 1 ) must throwA[IllegalArgumentException]
         }
     }
 
     "A MineFieldGrid of size 1 with 1 mine" should {
         "not be able to be constructed" in {
-            val grid = MineFieldGrid( 1, 1, 1 ) must throwA[IllegalArgumentException]
+            val grid = MineFieldGrid( 1, 1, ( 0, 0 ) :: Nil ) must throwA[IllegalArgumentException]
         }
     }
 
     "A MineFieldGrid of size 1 * 2 with 1 mine" should {
 
-        val grid = MineFieldGrid( 1, 2, 1 )
+        val grid = MineFieldGrid( 1, 2, ( 0, 1 ) :: Nil )
 
         "not have a mine on the initial field" in {
             val newgrid = grid.uncoverField( ( 0, 0 ) )
@@ -90,23 +90,31 @@ class MineFieldGridTest extends SpecificationWithJUnit {
 
     "A MineFieldGrid of size 3 * 3 with 2 mines" should {
 
-        val grid = MineFieldGrid( 3, 3, 2, ( 1, 2 ) :: Nil )
+        val grid = MineFieldGrid( 3, 3, ( 1, 2 ) :: ( 2, 1 ) :: Nil )
 
-        "Not have an armed mine in inital field" in {
-            val newgrid = grid.uncoverField( ( 1, 2 ) )
-            newgrid._1( 1 )( 2 ).triggered must beFalse
+        "Not have an armed mine in the field" in {
+            val newgrid = grid.uncoverField( ( 2, 2 ) )
+            newgrid._1( 2 )( 2 ).triggered must beFalse
             newgrid._2 must beFalse
         }
 
-        "Have exactly 2 mines" in {
+        "Have mines in the uncovered fields" in {
+            grid.uncoverField(1, 2)
+            grid.uncoverField(2, 1)
             for ( i <- 0 until 3; j <- 0 until 3 ) grid.uncoverField( ( i, j ) )
-            grid.getGridState().flatten count ( x => x.triggered ) must be_==( 2 )
+            val newgrid = grid.getGridState
+            newgrid(1)(2).triggered must beTrue
+            newgrid(2)(1).triggered must beTrue
+            newgrid.flatten count ( _.triggered ) must be_==( 2 )
+            newgrid.flatten count (_.uncovered ) must be_== (7)
+            grid.lost must beTrue
+            grid.won must beFalse
         }
 
     }
 
     "A MineFieldGrid of size 100 * 100 without mines" should {
-        val grid = new MineFieldGrid( 50, 50, 0 )
+        val grid = MineFieldGrid( 100, 100 )
 
         "be won immediately and completely uncovered" in {
             val ( state, loss, win ) = grid.uncoverField( 25, 25 )
