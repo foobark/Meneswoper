@@ -33,15 +33,15 @@ class GridController {
         xboundaries = 0 until xsize
         grid = null
         newgame = true
-        val coveredRow = List[ MineFieldState ]() ++ ( for ( i <- 0 until difficulty._2 ) yield MineFieldState.covered() )
-        val stategrid: GridState = List() ++ ( for ( i <- 0 until difficulty._1 ) yield coveredRow )
-        update( new NewGameStarted( stategrid ) )
+        grid = MineFieldGrid(ysize, xsize)
+        update( new NewGameStarted( grid.getGridState ) )
     }
 
     def uncoverPosition( y: Int, x: Int ) = {
         boundaryCheck( y, x )
         if ( newgame ) {
-            grid = MineFieldGrid( ysize, xsize, difficulty._3, ( y, x ) :: Nil)
+            val clearFields = (y, x) :: grid.getAdjacentPos(y, x)
+            grid = MineFieldGrid( ysize, xsize, difficulty._3,   clearFields)
             newgame = false
         }
         val result = grid.uncoverField( y, x )

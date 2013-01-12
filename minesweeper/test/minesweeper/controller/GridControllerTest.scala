@@ -1,6 +1,8 @@
 package minesweeper.controller
 
 import org.specs.SpecificationWithJUnit
+import scala.Math.sqrt
+import scala.Math.pow
 
 class GridControllerTest extends SpecificationWithJUnit {
 
@@ -17,113 +19,91 @@ class GridControllerTest extends SpecificationWithJUnit {
 
         override def react( event: GridEvent ) = {
             event match {
-                case ngs: NewGameStarted => {
-                    newGame = true
-                }
+                case ngs: NewGameStarted => newGame = true
 
-                case fu: FieldUncovered => {
-                    fieldUncovered = true
-                }
-                
-                case fm: FieldMarked => {
-                    fieldMarked = true
-                }
-                
-                case fum: FieldUnmarked => {
-                    fieldUnmarked = true
-                }
+                case fu: FieldUncovered  => fieldUncovered = true
 
-                case gw: GameWon => {
-                    gameWon = true
-                }
+                case fm: FieldMarked     => fieldMarked = true
 
-                case gl: GameLost => {
-                    gameLost = true
-                }
+                case fum: FieldUnmarked  => fieldUnmarked = true
+
+                case gw: GameWon         => gameWon = true
+
+                case gl: GameLost        => gameLost = true
             }
             gridReceived = event.grid
         }
     }
 
-    "A GridController controlling a 1 * 2 field with 1 mine" should {
+    "A GridController controlling a 3 * 3 field with 1 mine" should {
         val controller = new GridController()
-        val reactor = new MockReactor(controller)
-        val diff = (1,2,1)
-        
-        "Create a new 1 * 2 field with all fields covered" in {
-            controller.startNewGame(diff)
+        val reactor = new MockReactor( controller )
+        val diff = ( 3, 3, 1 )
+
+        "Create a new 3 * 3 field with all fields covered" in {
+            controller.startNewGame( diff )
             reactor.newGame must beTrue
             reactor.fieldUncovered must beFalse
             reactor.fieldMarked must beFalse
             reactor.fieldUnmarked must beFalse
             reactor.gameLost must beFalse
             reactor.gameWon must beFalse
-            reactor.gridReceived(0) forall(_.covered) must beTrue
+            reactor.gridReceived.flatten forall ( _.covered ) must beTrue
         }
-        
-        "Not uncover a mine the first time and tell me i won the game" in {
-            controller.startNewGame(diff)
-            controller.uncoverPosition(0, 0)
-            reactor.fieldUncovered must beFalse
+
+        "Not uncover a mine the first time" in {
+            controller.startNewGame( diff )
+            controller.uncoverPosition( 0, 0 )
             reactor.gameLost must beFalse
-            reactor.gameWon must beTrue
-            reactor.gridReceived(0)(0).uncovered must beTrue
-            reactor.gridReceived(0)(1).covered must beTrue
-            
-            controller.startNewGame(diff)
-            controller.uncoverPosition(0, 1)
-            reactor.fieldUncovered
+            reactor.gridReceived( 0 )( 0 ).uncovered must beTrue
+
+            controller.startNewGame( diff )
+            controller.uncoverPosition( 2, 2 )
             reactor.gameLost must beFalse
-            reactor.gameWon must beTrue
-            reactor.gridReceived(0)(1).uncovered must beTrue
-            reactor.gridReceived(0)(0).covered must beTrue
-        }
-        
-        "Uncover a mine the 2nd time" in {
-            controller.startNewGame(diff)
-            controller.uncoverPosition(0,0)
-            controller.uncoverPosition(0,1)
-            reactor.gameLost must beTrue
-            reactor.gridReceived(0)(0).uncovered must beTrue
-            reactor.gridReceived(0)(1).triggered must beTrue
+            reactor.gridReceived( 2 )( 2 ).uncovered must beTrue
         }
     }
-    
-    "A GridController controlling a 10 * 10 field with 98 mines" should {
-        val controller= new GridController()
-        val reactor = new MockReactor(controller)
-        val diff = (10, 10, 98)
-        
-        "Trigger a GridUpdate" in {  
-            controller.startNewGame(diff)
-            controller.uncoverPosition(0,0)
+
+    "A GridController controlling a 5 * 5 field with 16 mines" should {
+        val controller = new GridController()
+        val reactor = new MockReactor( controller )
+        val diff = ( 5, 5, 16 )
+
+        "Trigger a GridUpdate" in {
+            controller.startNewGame( diff )
+            controller.uncoverPosition( 0, 0 )
             reactor.fieldUncovered must beTrue
         }
-        
+
         "Trigger a GridUpdate and mark the field" in {
-            controller.startNewGame(diff)
-            controller.uncoverPosition(0,0)
-            controller.markPosition(5,5)
+            controller.startNewGame( diff )
+            controller.uncoverPosition( 0, 0 )
+            controller.markPosition( 4, 4 )
             reactor.fieldUncovered must beTrue
             reactor.fieldMarked must beTrue
-            reactor.gameWon must beFalse
-            reactor.gameLost must beFalse
-            reactor.gridReceived(5)(5).marked must beTrue
-            reactor.gridReceived.flatten.count(_.uncovered) must be_==(1)
-            reactor.gridReceived.flatten.count(_.covered) must be_== (98)
+            reactor.gridReceived( 4 )( 4 ).marked must beTrue
+            reactor.gridReceived( 0 )( 0 ).uncovered must beTrue
         }
-        
+
         "Trigger a GridUpdate and unmark the field" in {
-            controller.startNewGame(diff)
-            controller.uncoverPosition(0,0)
-            controller.markPosition(5,5)
-            controller.unmarkPosition(5, 5)
+            controller.startNewGame( diff )
+            controller.uncoverPosition( 0, 0 )
+            controller.markPosition( 4, 4 )
+            controller.unmarkPosition( 4, 4 )
             reactor.fieldUnmarked must beTrue
             reactor.gameWon must beFalse
             reactor.gameLost must beFalse
-            reactor.gridReceived(5)(5).marked must beFalse
-            reactor.gridReceived.flatten.count(_.uncovered) must be_==(1)
-            reactor.gridReceived.flatten.count(_.covered) must be_== (99)
+            reactor.gridReceived( 4 )( 4 ).marked must beFalse
+        }
+
+        "Have no mines in the 8 positions around the first field and uncover them" in {
+            def distance( x1: Int, y1: Int, x2: Int, y2: Int ): Int = sqrt( pow( x2 - x1, 2 ) + pow( y2 - y1, 2 ) ).round.intValue
+            controller.startNewGame( diff )
+            controller.uncoverPosition( 2, 2 )
+            reactor.gridReceived.flatten count ( _.uncovered ) must be_==( 9 )
+            reactor.gridReceived.flatten count ( _.covered ) must be_==( 16 )
+            reactor.gameWon must beTrue
+            reactor.gameLost must beFalse
         }
     }
 }

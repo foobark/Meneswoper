@@ -39,11 +39,11 @@ case class MineFieldGrid( val ysize: Int,
         require( !grid( y )( x ).armed, { throw new MineGridException( pos + " already is a mine. can't place another one" ) } )
         new MineFieldGrid( ysize, xsize, mines :+ pos )
     }
-    
-    def removeMine( pos: (Int, Int) ): MineFieldGrid = {
-        val (y, x) = pos
-        require( grid(y)(x).armed, { throw new MineGridException( pos + " is not a mine. can't remove it")})
-        new MineFieldGrid( ysize, xsize, mines - pos)
+
+    def removeMine( pos: ( Int, Int ) ): MineFieldGrid = {
+        val ( y, x ) = pos
+        require( grid( y )( x ).armed, { throw new MineGridException( pos + " is not a mine. can't remove it" ) } )
+        new MineFieldGrid( ysize, xsize, mines - pos )
     }
 
     //get a representation of the State of the grid
@@ -77,10 +77,10 @@ case class MineFieldGrid( val ysize: Int,
         getGridState
     }
 
-    def won: Boolean = (uncovered == xsize * ysize - minecount) && !gameLost
+    def won: Boolean = ( uncovered == xsize * ysize - minecount ) && !gameLost
 
     def lost: Boolean = gameLost
-    
+
     override def toString: String = {
         grid.map( _.mkString( " " ) ).mkString( "\n" )
     }
@@ -93,16 +93,13 @@ case class MineFieldGrid( val ysize: Int,
         for ( i <- 0 until ysize; j <- 0 until xsize; if fieldEmpty( i, j ) )
             grid( i )( j ) = NumberField( MineFieldState.covered( countAdjacentMines( i, j ) ) )
     }
-     
+
     //Count the number of Mines adjacent to a field
     private def countAdjacentMines( y: Int, x: Int ): Int = getAdjacentPos( y, x ) count ( isMineField )
 
     //get adjacent, valid positions to a field
-    private def getAdjacentPos( y: Int, x: Int ): List[( Int, Int )] = {
-        val offsets = ( -1 to 1 )
-        //every combination pair of the values from -1 to 1
-        val combos = offsets.map( x => offsets.map( ( x, _ ) ) ).flatten.toList
-        combos.map( ( o: ( Int, Int ) ) => ( y + o._1, x + o._2 ) ).filter( isValidPos )
+    def getAdjacentPos( y: Int, x: Int ): List[( Int, Int )] = {
+        MineFieldGrid.adjacentPos( y, x ).filter( isValidPos )
     }
 
     //check whether the field is an armed mine
@@ -124,34 +121,44 @@ case class MineFieldGrid( val ysize: Int,
             val ( y, x ) = positions.head
             val field = grid( y )( x )
             if ( field.covered ) {
+//                println( "uncoverd" + ( y, x ) )
                 grid( y )( x ) = field.uncover()
                 uncovered += 1
-                gameLost = if(!gameLost) field.armed else true
+                gameLost = if ( !gameLost ) field.armed else true
             }
-            if ( field.adjacent == 0 && !field.armed && !field.marked ) {
-                val neighbours = getAdjacentPos( y, x ).filter( z => grid( z._1 )( z._2 ).covered )
-                doUncover( ( positions.tail ++ neighbours ).distinct )
-            }
+            val neighbours =
+                if ( field.adjacent == 0 &&
+                    !field.armed &&
+                    !field.marked ) getAdjacentPos( y, x ).filter( z => grid( z._1 )( z._2 ).covered )
+                else Nil
+//            println( "positions left: " + positions.tail )
+//            println( "neighbours: " + neighbours )
+            doUncover( ( positions.tail ++ neighbours ).distinct )
         }
     }
 
     //method returning whether the game has been won or not
-    
 
-    private def inBoundaries( pos: ( Int, Int ) ): Boolean = {
+    def inBoundaries( pos: ( Int, Int ) ): Boolean = {
         yboundaries.contains( pos._1 ) && xboundaries.contains( pos._2 )
     }
 }
 
 object MineFieldGrid {
-    
-	def apply(ysize: Int, xsize: Int, minecount: Int, excludes: List[(Int, Int)]): MineFieldGrid = {
-	    def randstream: Stream[(Int, Int)] = (Random.nextInt(ysize), Random.nextInt(xsize)) #:: randstream
-	    val mines = randstream.distinct.filter(!excludes.contains(_)).take(minecount).toList
-	    new MineFieldGrid(ysize, xsize, mines)
-	}
-	
-	
+
+    def apply( ysize: Int, xsize: Int, minecount: Int, excludes: List[( Int, Int )] ): MineFieldGrid = {
+        def randstream: Stream[( Int, Int )] = ( Random.nextInt( ysize ), Random.nextInt( xsize ) ) #:: randstream
+        val mines = randstream.distinct.filter( !excludes.contains( _ ) ).take( minecount ).toList
+        new MineFieldGrid( ysize, xsize, mines )
+    }
+
+    def adjacentPos( y: Int, x: Int ): List[( Int, Int )] = {
+        val offsets = ( -1 to 1 )
+        //every combination pair of the values from -1 to 1
+        val combos = offsets.map( z => offsets.map( ( z, _ ) ) ).toList.flatten - ( 0, 0 )
+        combos.map( ( o: ( Int, Int ) ) => ( y + o._1, x + o._2 ) ).filter( z => z._1 >= 0 && z._2 >= 0 )
+    }
+
 }
 
 case class MineGridException( s: String ) extends Exception

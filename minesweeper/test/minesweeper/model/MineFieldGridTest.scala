@@ -123,4 +123,42 @@ class MineFieldGridTest extends SpecificationWithJUnit {
             win must beTrue
         }
     }
+    
+    "A MineFieldGrid of size 2 * 2 with 2 randomly placed mines" should {
+        
+        val grid = MineFieldGrid(2, 2, 2, (0, 0) :: (1, 1) :: Nil)
+        
+        "not have mines on the excluded positions" in {
+        	grid.uncoverField(0, 0)
+        	val (newgrid, loss, win) = grid.uncoverField(1, 1)
+        	loss must beFalse
+        	win must beTrue
+        	newgrid(0)(0).uncovered must beTrue
+        	newgrid(0)(1).covered must beTrue
+        	newgrid(1)(0).covered must beTrue
+        	newgrid(1)(1).uncovered must beTrue
+        }
+        
+        "have mines on the non excluded positions" in {
+        	grid.uncoverField(0, 1)
+        	val (newgrid, loss, win) = grid.uncoverField(1, 0)
+        	loss must beTrue
+        	win must beFalse
+        	newgrid(0)(0).covered must beTrue
+        	newgrid(0)(1).triggered must beTrue
+        	newgrid(1)(0).triggered must beTrue
+        	newgrid(1)(1).covered must beTrue
+        }
+    }
+    
+    "A MineFieldGrid of size 5 * 5 with 16 randomly placed mines" should {
+        val grid = MineFieldGrid(5, 5, 16, (2,2) :: MineFieldGrid.adjacentPos(2, 2))
+        
+        "uncover 8 fields around the center field" in {
+            val (newgrid, loss, win) = grid.uncoverField(2, 2)
+            newgrid.flatten.count( _.uncovered) must be_==(9)
+            loss must beFalse
+            win must beTrue
+        }
+    }
 }
