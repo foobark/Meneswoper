@@ -36,13 +36,13 @@ case class MineFieldGrid( val ysize: Int,
 
     def addMine( pos: ( Int, Int ) ): MineFieldGrid = {
         val ( y, x ) = pos
-        require( !grid( y )( x ).armed, { throw new MineGridException( pos + " already is a mine. can't place another one" ) } )
+        require( !this( y, x ).armed, { throw new MineGridException( pos + " already is a mine. can't place another one" ) } )
         new MineFieldGrid( ysize, xsize, mines :+ pos )
     }
 
     def removeMine( pos: ( Int, Int ) ): MineFieldGrid = {
         val ( y, x ) = pos
-        require( grid( y )( x ).armed, { throw new MineGridException( pos + " is not a mine. can't remove it" ) } )
+        require( this( y, x ).armed, { throw new MineGridException( pos + " is not a mine. can't remove it" ) } )
         new MineFieldGrid( ysize, xsize, mines - pos )
     }
 
@@ -103,14 +103,15 @@ case class MineFieldGrid( val ysize: Int,
     }
 
     //check whether the field is an armed mine
-    private def isMineField( pos: ( Int, Int ) ): Boolean = grid( pos._1 )( pos._2 ).armed
+    private def isMineField( pos: ( Int, Int ) ): Boolean = this( pos._1, pos._2 ).armed
 
+    private def apply( y: Int, x: Int ): Field = grid( y )( x )
     //Check if position is within boundaries
     private def isValidPos( pos: ( Int, Int ) ): Boolean = inBoundaries( pos ) && !fieldEmpty( pos._1, pos._2 )
 
     //check whether the position has already been populated with a field
     private def fieldEmpty( y: Int, x: Int ): Boolean = {
-        grid( y )( x ) == null
+        this( y, x ) == null
     }
 
     //auxilary method for uncovering fields
@@ -119,9 +120,9 @@ case class MineFieldGrid( val ysize: Int,
     private def doUncover( positions: List[( Int, Int )] ) {
         if ( positions.nonEmpty ) {
             val ( y, x ) = positions.head
-            val field = grid( y )( x )
+            val field = this( y, x )
             if ( field.covered ) {
-//                println( "uncoverd" + ( y, x ) )
+                //                println( "uncoverd" + ( y, x ) )
                 grid( y )( x ) = field.uncover()
                 uncovered += 1
                 gameLost = if ( !gameLost ) field.armed else true
@@ -129,10 +130,10 @@ case class MineFieldGrid( val ysize: Int,
             val neighbours =
                 if ( field.adjacent == 0 &&
                     !field.armed &&
-                    !field.marked ) getAdjacentPos( y, x ).filter( z => grid( z._1 )( z._2 ).covered )
+                    !field.marked ) getAdjacentPos( y, x ).filter( z => this( z._1, z._2 ).covered )
                 else Nil
-//            println( "positions left: " + positions.tail )
-//            println( "neighbours: " + neighbours )
+            //            println( "positions left: " + positions.tail )
+            //            println( "neighbours: " + neighbours )
             doUncover( ( positions.tail ++ neighbours ).distinct )
         }
     }
