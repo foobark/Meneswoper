@@ -1,20 +1,20 @@
 package minesweeper.model
 
-case class NumberField(override val state: MineFieldState ) extends Field( false, state ) {
+class NumberField(override val state: MineFieldState ) extends Field( false, state ) {
 
     def mark(): Field = {
         checkMarkedConstraint
-        NumberField( MineFieldState.marked( adjacent ) )
+        new NumberField( MineFieldState.marked( adjacent ) )
     }
 
     def unmark(): Field = {
         checkUnmarkConstraint
-        NumberField( MineFieldState.covered( adjacent ) )
+        new NumberField( MineFieldState.covered( adjacent ) )
     }
 
     def uncover(): Field = {
         checkUncoveredConstraint
-        NumberField( MineFieldState.uncovered( adjacent ) )
+        new NumberField( MineFieldState.uncovered( adjacent ) )
     }
 
     override def toString() = "NumberField - state: " + state.toString
