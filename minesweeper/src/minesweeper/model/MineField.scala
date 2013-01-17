@@ -1,6 +1,6 @@
 package minesweeper.model
 
-case class MineField private (override val state: MineFieldState = MineFieldState.covered( 0 ) ) extends Field( true, state ) {
+class MineField private (override val state: MineFieldState = MineFieldState.covered( 0 ) ) extends Field( true, state ) {
 
     def mark(): Field = {
         checkMarkedConstraint
