@@ -36,14 +36,14 @@ case class MineFieldGrid( val ysize: Int,
 
     def addMine( pos: ( Int, Int ) ): MineFieldGrid = {
         val ( y, x ) = pos
-        require( !this( y, x ).armed, { throw new MineGridException( pos + " already is a mine. can't place another one" ) } )
+        require( !grid( y )( x ).armed, { throw new MineGridException( pos + " already is a mine. can't place another one" ) } )
         new MineFieldGrid( ysize, xsize, mines :+ pos )
     }
 
     def removeMine( pos: ( Int, Int ) ): MineFieldGrid = {
         val ( y, x ) = pos
-        require( this( y, x ).armed, { throw new MineGridException( pos + " is not a mine. can't remove it" ) } )
-        new MineFieldGrid( ysize, xsize, mines - pos )
+        require( grid( y )( x ).armed, { throw new MineGridException( pos + " is not a mine. can't remove it" ) } )
+        new MineFieldGrid( ysize, xsize, mines filter(_ !=pos) )
     }
 
     //get a representation of the State of the grid
@@ -91,7 +91,7 @@ case class MineFieldGrid( val ysize: Int,
         mines.foreach( x => grid( x._1 )( x._2 ) = MineField() )
         //...then fill the rest and calculate no. of adjacent mines for fields
         for ( i <- 0 until ysize; j <- 0 until xsize; if fieldEmpty( i, j ) )
-            grid( i )( j ) = NumberField( MineFieldState.covered( countAdjacentMines( i, j ) ) )
+            grid( i )( j ) = new NumberField( MineFieldState.covered( countAdjacentMines( i, j ) ) )
     }
 
     //Count the number of Mines adjacent to a field
@@ -103,15 +103,15 @@ case class MineFieldGrid( val ysize: Int,
     }
 
     //check whether the field is an armed mine
-    private def isMineField( pos: ( Int, Int ) ): Boolean = this( pos._1, pos._2 ).armed
+    private def isMineField( pos: ( Int, Int ) ): Boolean = grid( pos._1 )( pos._2 ).armed
 
-    private def apply( y: Int, x: Int ): Field = grid( y )( x )
+    def apply( y: Int, x: Int ): MineFieldState = grid( y )( x ).state
     //Check if position is within boundaries
     private def isValidPos( pos: ( Int, Int ) ): Boolean = inBoundaries( pos ) && !fieldEmpty( pos._1, pos._2 )
 
     //check whether the position has already been populated with a field
     private def fieldEmpty( y: Int, x: Int ): Boolean = {
-        this( y, x ) == null
+        grid( y)( x ) == null
     }
 
     //auxilary method for uncovering fields
@@ -120,8 +120,8 @@ case class MineFieldGrid( val ysize: Int,
     private def doUncover( positions: List[( Int, Int )] ) {
         if ( positions.nonEmpty ) {
             val ( y, x ) = positions.head
-            val field = this( y, x )
-            if ( field.covered ) {
+            val field = grid( y )( x )
+            if ( this( y, x ).covered ) {
                 //                println( "uncoverd" + ( y, x ) )
                 grid( y )( x ) = field.uncover()
                 uncovered += 1
@@ -156,7 +156,7 @@ object MineFieldGrid {
     def adjacentPos( y: Int, x: Int ): List[( Int, Int )] = {
         val offsets = ( -1 to 1 )
         //every combination pair of the values from -1 to 1
-        val combos = offsets.map( z => offsets.map( ( z, _ ) ) ).toList.flatten - ( 0, 0 )
+        val combos = offsets.map( z => offsets.map( ( z, _ ) ) ).toList.flatten diff ( 0, 0 ):: Nil
         combos.map( ( o: ( Int, Int ) ) => ( y + o._1, x + o._2 ) ).filter( z => z._1 >= 0 && z._2 >= 0 )
     }
 
