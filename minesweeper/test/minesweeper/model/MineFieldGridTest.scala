@@ -22,9 +22,9 @@ class MineFieldGridTest extends SpecificationWithJUnit {
         val grid = MineFieldGrid( 1, 2, ( 0, 1 ) :: Nil )
 
         "not have a mine on the initial field" in {
-            val newgrid = grid.uncoverField( ( 0, 0 ) )
-            newgrid._1( 0 )( 0 ).triggered must beFalse
-            newgrid._2 must beFalse
+            grid.uncoverField( ( 0, 0 ) )
+            grid( 0, 0 ).triggered must beFalse
+            grid.lost must beFalse
         }
 
         "indicate i won the game" in {
@@ -32,14 +32,14 @@ class MineFieldGridTest extends SpecificationWithJUnit {
         }
 
         "have a mine on the 2nd field" in {
-            val newgrid = grid.uncoverField( ( 0, 1 ) )
-            newgrid._1( 0 )( 1 ).triggered must beTrue
-            newgrid._2 must beTrue
-            newgrid._3 must beFalse
+            grid.uncoverField( ( 0, 1 ) )
+            grid( 0, 1 ).triggered must beTrue
+            grid.lost must beTrue
+            grid.won must beFalse
         }
 
         "have a field with 1 adjacent mine in first spot" in {
-            grid.getGridState()( 0 )( 0 ).adjacent must be_==( 1 )
+            grid( 0, 0 ).adjacent must be_==( 1 )
         }
 
         "throw an Exception when marking an uncovered field" in {
@@ -56,34 +56,28 @@ class MineFieldGridTest extends SpecificationWithJUnit {
 
         "Not uncover a marked field" in {
             grid.markField( ( 0, 0 ) )
-            val newgrid = grid.uncoverField( ( 0, 0 ) )
-            newgrid._1( 0 )( 0 ).marked must beTrue
-            newgrid._1( 0 )( 0 ).uncovered must beFalse
+            grid.uncoverField( ( 0, 0 ) )
+            grid( 0, 0 ).marked must beTrue
+            grid( 0, 0 ).uncovered must beFalse
         }
 
         "return a grid of size 1 * 2 with 1 uncovered untriggered Field with one adjacent mine" in {
-            val newgrid = grid.uncoverField( ( 0, 0 ) )._1
-            newgrid.size must be_==( 1 )
-            newgrid( 0 ).size must be_==( 2 )
-            newgrid( 0 )( 0 ).triggered must beFalse
-            newgrid( 0 )( 0 ).adjacent must be_==( 1 )
-            newgrid( 0 )( 0 ).uncovered must beTrue
-            newgrid( 0 )( 1 ).covered must beTrue
+            grid.uncoverField( ( 0, 0 ) )
+            grid( 0 , 0 ).triggered must beFalse
+            grid( 0 , 0 ).adjacent must be_==( 1 )
+            grid( 0 , 0 ).uncovered must beTrue
+            grid( 0 , 1 ).covered must beTrue
         }
 
-        "return a grid of size 1 * 2 with 1 marked field" in {
-            val newgrid = grid.markField( ( 0, 0 ) )
-            newgrid.size must be_==( 1 )
-            newgrid( 0 ).size must be_==( 2 )
-            newgrid( 0 )( 0 ).marked must beTrue
-        }
-
-        "return a grid of size 1 * 2 with 1 unmarked field" in {
+        "return a grid with 1 marked field" in {
             grid.markField( ( 0, 0 ) )
-            val newgrid = grid.unmarkField( ( 0, 0 ) )
-            newgrid.size must be_==( 1 )
-            newgrid( 0 ).size must be_==( 2 )
-            newgrid( 0 )( 0 ).marked must beFalse
+            grid( 0 ,0 ).marked must beTrue
+        }
+
+        "return a grid with 1 unmarked field" in {
+            grid.markField( ( 0, 0 ) )
+            grid.unmarkField( ( 0, 0 ) )
+            grid( 0 ,0 ).marked must beFalse
         }
 
     }
@@ -93,9 +87,9 @@ class MineFieldGridTest extends SpecificationWithJUnit {
         val grid = MineFieldGrid( 3, 3, ( 1, 2 ) :: ( 2, 1 ) :: Nil )
 
         "Not have an armed mine in the field" in {
-            val newgrid = grid.uncoverField( ( 2, 2 ) )
-            newgrid._1( 2 )( 2 ).triggered must beFalse
-            newgrid._2 must beFalse
+            grid.uncoverField( ( 2, 2 ) )
+            grid( 2 , 2 ).triggered must beFalse
+            grid.lost must beFalse
         }
 
         "Have mines in the uncovered fields" in {
