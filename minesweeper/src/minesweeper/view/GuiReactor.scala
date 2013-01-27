@@ -6,83 +6,42 @@ import swing.event._
 import GridBagPanel._
 import java.awt.Insets
 
-class GuiReactor(controller: GridController) extends GridReactor(controller) {
+class GuiReactor( private var controller: StandardGridController ) extends GridReactor {
 
-  private var menuPanel = new BoxPanel(Orientation.Horizontal) {
-    contents += gameButtons.newGameButtonEasy
-    contents += gameButtons.newGameButtonMedium
-    contents += gameButtons.newGameButtonDifficult
-    contents += gameButtons.quitButton
-  }
+    listenTo( controller )
 
-  private var mineGrid = new GridBagPanel {
-    val c = new Constraints
-    for (y <- 0 until 8; x <- 0 until 8) {
-      var minefield = new MineFieldButton("", (y, x))
-      c.gridx = minefield.pos._2
-      c.gridy = minefield.pos._1
-      layout(minefield) = c
-    }
-  }
+    private var gameEnd = false
 
-  private var diff = (Difficulties.easy, Difficulties.medium, Difficulties.difficult)
+    def gameOver: Boolean = gameEnd
+    
+    private object publisher extends Publisher
 
-  val mainWindow = new MainFrame {
+    reactions += (
+        {
+            case ge: GridEvent if !ge.isInstanceOf[GameLost] &&
+                !ge.isInstanceOf[GameWon] &&
+                !gameEnd =>
+                publisher.publish( new GridUpdated( ge.grid ) )
+        },
+        {
+            case ge: GridEvent if ( ge.isInstanceOf[GameLost] || ge.isInstanceOf[GameWon] )
+                && !gameEnd =>
+                publisher.publish( new GridUpdated( ge.grid ) ); gameEnd = true
+        } )
 
-    contents = new BoxPanel(Orientation.Vertical) {
-      contents += menuPanel
-      contents += mineGrid
-    }
-
-  }
-
-  draw
-
-  def react(e: GridEvent) {
-//    gameEnd = event match {
-//      case gw: GameWon => true
-//      case gl: GameLost => true
-//      case _ => false
-//    }
-//    generateOutput(event)
-  }
-
-  private def draw {
+    publisher.reactions += { case neg: EasyGameStarted => controller.startNewGame(Difficulties.easy) }
+    publisher.reactions += { case nmg: MediumGameStarted => controller.startNewGame(Difficulties.medium) }
+    publisher.reactions += { case hgs: HardGameStarted => controller.startNewGame( Difficulties.difficult ) }
+    publisher.reactions += { case gq: GameQuit => gameEnd = true; mainWindow.close() }
+    publisher.reactions += { case uncovered: CoveredFieldClicked => controller.uncoverPosition(uncovered.y, uncovered.x) }
+    publisher.reactions += { case marked: CoveredFieldRightClicked => controller.markPosition(marked.y, marked.x) }
+    
+    val mainWindow = new MineGridFrame()
+    mainWindow.listenTo( publisher )
+    publisher.listenTo(mainWindow)
+    
     mainWindow.title = "Mineswoper"
     mainWindow.visible = true
     mainWindow.resizable = true
-  }
-  
-//  private def generateOutput( event: GridEvent ): String = {
-//        val msg: String = event match {
-//            case fu: FieldUncovered  => event.grid.
-//            case fm: FieldMarked     => "Field " ++ fm.field.toString ++ " got marked"
-//            case fum: FieldUnmarked  => "Field " ++ fum.field.toString ++ " got unmarked"
-//            case gw: GameWon         => "You cleared the Minefield"
-//            case gl: GameLost        => "You stepped on a Mine!"
-//            case ngs: NewGameStarted => ngs.field.
-//        }
-//        msg concat ( "\n\n" ) concat ( ( event.grid ).map( _.mkString( " " ) ).mkString( "\n" ) )
-//    }
-
 }
 
-private object gameButtons {
-  val newGameButtonEasy = new Button {
-    text = "NewGame - easy"
-  }
-  val newGameButtonMedium = new Button {
-    text = "NewGame - medium"
-  }
-  val newGameButtonDifficult = new Button {
-    text = "NewGame - difficult"
-  }
-  val quitButton = new Button {
-    text = "Quit"
-  }
-}
-
-private class MineFieldButton(text: String = "", val pos: (Int, Int)) extends Button(text) {
-  preferredSize = new Dimension(25, 25)
-  minimumSize = new Dimension(10, 10)
-}
