@@ -1,14 +1,25 @@
 package minesweeper.controller
 
-abstract class GridReactor(protected var controller: GridController) {
+import scala.collection.mutable
+
+abstract class GridReactor {
+    type Reaction = PartialFunction[GridEvent, Unit]
     
-    listenTo(controller)
+    var reactions = new mutable.MutableList[Reaction]()
+     
+    final def react(e: GridEvent) = {
+        executeReaction(e, reactions.toList)
+    }
     
-    def react(e: GridEvent)
-    
-    def listenTo(contr: GridController) = {
+    final def listenTo(contr: StandardGridController) = {
         require(contr != null)
         contr.register(this)
-        controller = contr
+    }
+    
+    private def executeReaction(e: GridEvent, reacs: List[Reaction]): Unit = {
+        if(reacs.nonEmpty) {
+            if(reacs.head.isDefinedAt(e)) reacs.head(e)
+            else executeReaction(e, reacs.tail)
+        }
     }
 }
