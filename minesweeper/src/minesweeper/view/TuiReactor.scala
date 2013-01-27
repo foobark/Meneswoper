@@ -9,7 +9,9 @@ import minesweeper.controller._
  * @author ti614
  *
  */
-class TuiReactor( controller: GridController ) extends GridReactor( controller ) {
+class TuiReactor( controller: StandardGridController ) extends GridReactor {
+
+    listenTo( controller )
 
     private var difficultySelect = false
 
@@ -17,14 +19,9 @@ class TuiReactor( controller: GridController ) extends GridReactor( controller )
 
     private var gameEnd = false
 
-    def react( event: GridEvent ): Unit = {
-        gameEnd = event match {
-            case gw: GameWon  => true
-            case gl: GameLost => true
-            case _            => false
-        }
-        println( generateOutput( event ) )
-    }
+    reactions += (
+        { case e: GridEvent if e.isInstanceOf[GameLost] || e.isInstanceOf[GameWon] => { gameEnd = true; println( generateOutput( e ) ) } },
+        { case e: GridEvent => println( generateOutput( e ) ) } )
 
     def processInputLine( input: String ): Boolean = {
 
@@ -72,8 +69,7 @@ class TuiReactor( controller: GridController ) extends GridReactor( controller )
                         println( generateOutput( '\0' ) )
                         true
                     }
-                }
-            )
+                } )
     }
 
     def generateOutput( cmd: Char ): String = {
@@ -87,7 +83,7 @@ class TuiReactor( controller: GridController ) extends GridReactor( controller )
             case 'e' if difficultySelect => "Difficulty easy selected\n\n"
             case 'm' if difficultySelect => "Difficulty medium selected\n\n"
             case 'h' if difficultySelect => "Difficulty hard selected\n\n"
-            case _   => "Invalid input\n\n"
+            case _                       => "Invalid input\n\n"
         }
     }
 
