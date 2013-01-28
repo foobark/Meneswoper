@@ -15,4 +15,11 @@
 		<nature>org.scala-ide.sdt.core.scalanature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>binfoo</name>
+			<type>2</type>
+			<location>E:/gitrepo/Meneswoper/minesweeper/bin</location>
+		</link>
+	</linkedResources>
 </projectDescription>
