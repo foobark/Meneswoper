@@ -6,11 +6,11 @@ object Minesweeper {
   
 
   def main(args: Array[String]) {
-  val controller = new GridController
+  val controller = new StandardGridController
   val tui = new TuiReactor(controller)
   val gui = new GuiReactor(controller)
   
-    while (tui.processInputLine(readLine())) {}
+    while (tui.processInputLine(readLine()) && !gui.gameOver) {}
   }
 
 }
